@@ -1,0 +1,123 @@
+/* src/app/albuns/page.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.page {
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
+  --amber: var(--accent);
+  --amber-soft: var(--accent-soft);
+  --teal: var(--moss);
+
+  min-height: 100vh;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0 32px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.pageHeader {
+  max-width: 1180px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+}
+
+.pageTitle {
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.pageSub {
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+  margin-top: 6px;
+}
+
+.section {
+  max-width: 1180px;
+  margin: 44px auto 0;
+  padding: 0 32px;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sectionTitle svg {
+  color: var(--teal);
+}
+
+.sectionNote {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 22px;
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  padding: 24px 0;
+}
+
+.emptyState {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .pageHeader,
+  .section {
+    padding: 0 20px;
+  }
+
+  .backLink {
+    margin-left: 20px;
+  }
+}

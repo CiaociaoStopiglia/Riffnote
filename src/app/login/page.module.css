@@ -1,0 +1,238 @@
+/* src/app/login/page.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.page {
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
+  --amber: var(--accent);
+  --amber-soft: var(--accent-soft);
+  --teal: var(--moss);
+  --red: #d64545;
+
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(244, 239, 230, 0.035) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none;
+}
+
+.backLink {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  z-index: 2;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 36px 32px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.logoIcon {
+  color: var(--amber);
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  margin-bottom: 28px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: var(--ink-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tabActive {
+  color: var(--ink);
+  border-bottom-color: var(--amber);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form :global(.ant-input),
+.form :global(.ant-input-affix-wrapper) {
+  background: var(--bg-void) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.form :global(.ant-input)::placeholder {
+  color: var(--ink-faint);
+}
+
+.form :global(.ant-input-affix-wrapper:focus),
+.form :global(.ant-input-affix-wrapper-focused),
+.form :global(.ant-input:focus) {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 0 3px rgba(232, 150, 60, 0.15) !important;
+}
+
+.form :global(.ant-input-password-icon) {
+  color: var(--ink-muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+}
+
+.submitBtn {
+  margin-top: 6px;
+  background: var(--amber);
+  color: #1a1310;
+  border: none;
+  border-radius: 999px;
+  padding: 12px 0;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.submitBtn:hover {
+  background: var(--amber-soft);
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.googleBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--bg-void);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 11px 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.googleBtn:hover {
+  border-color: var(--ink-faint);
+}
+
+.errorText {
+  color: var(--red);
+  font-size: 0.8rem;
+  margin-top: -4px;
+}
+
+.footNote {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.footNote button {
+  background: none;
+  border: none;
+  color: var(--amber-soft);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  padding: 0;
+}

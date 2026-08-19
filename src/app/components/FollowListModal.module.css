@@ -1,0 +1,75 @@
+/* src/app/components/FollowListModal.module.css */
+.page :global(.ant-modal-content) {
+  background: #1c1920 !important;
+  border: 1px solid #322c36;
+  border-radius: 12px !important;
+}
+
+.wrap {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  color: #ede6d6;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 16px;
+}
+
+.loading,
+.empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #948c7b;
+  font-size: 0.86rem;
+  padding: 20px 0;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 6px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.row:hover {
+  background: #1f1c21;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #1f1c21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #948c7b;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}

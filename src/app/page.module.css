@@ -1,27 +1,30 @@
-/* ============================================================
-   Tracklog — tela inicial
-   Paleta: preto-vinil quente + selo âmbar + selo teal
-   Tipografia: Fraunces (display, editorial) + Space Grotesk (corpo)
-              + Space Mono (números, metadados, "faixas")
+/* src/app/page.module.css
+   ============================================================
+   Riffnote — tela inicial
+   Conceito: capa de disco + liner notes, não "SaaS dashboard".
+   Paleta: preto de palco + creme de papel + vermelho de selo de vinil.
+   Tipografia: Big Shoulders Display (rótulo/cassete) + Inter (UI) +
+               Space Mono (números de faixa, catálogo, metadados).
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;1,9..144,500&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
 
 .page {
-  --bg-void: #121014;
-  --bg-surface: #1c1920;
-  --bg-surface-raised: #242028;
-  --line: #322c36;
-  --ink: #f4efe6;
-  --ink-muted: #a89f92;
-  --ink-faint: #6f6860;
-  --amber: #e8963c;
-  --amber-soft: #f2b46b;
-  --teal: #3fa796;
-  --red: #d64545;
+  --mx: 0;
+  --my: 0;
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
 
-  --font-display: 'Fraunces', ui-serif, Georgia, serif;
-  --font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Inter Tight', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, monospace;
 
   background: var(--bg-void);
@@ -35,10 +38,28 @@
 .page::before {
   content: '';
   position: fixed;
-  inset: 0;
+  inset: -60px;
   pointer-events: none;
-  background-image: radial-gradient(rgba(244, 239, 230, 0.035) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(237, 230, 214, 0.035) 1px, transparent 1px);
   background-size: 3px 3px;
+  background-position: calc(var(--mx) * 22px) calc(var(--my) * 22px);
+  transition: background-position 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+}
+
+/* segunda camada — um brilho ambiente quente que se desloca um pouco mais
+   que o grão acima, criando a sensação real de profundidade (parallax) */
+.page::after {
+  content: '';
+  position: fixed;
+  top: 8%;
+  left: 50%;
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, rgba(201, 67, 43, 0.09), transparent 65%);
+  transform: translate(calc(-50% + var(--mx) * 46px), calc(var(--my) * 46px));
+  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
   z-index: 0;
 }
 
@@ -52,7 +73,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 32px;
-  background: rgba(18, 16, 20, 0.82);
+  background: rgba(11, 10, 13, 0.86);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--line);
 }
@@ -62,20 +83,25 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.3rem;
+  font-weight: 700;
+  font-size: 1.25rem;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
 
 .logoIcon {
-  color: var(--amber);
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .navLinks {
   display: flex;
-  gap: 28px;
-  font-size: 0.92rem;
+  gap: 30px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--ink-muted);
 }
 
@@ -87,13 +113,57 @@
 
 .navLinks a:hover,
 .navLinks a:focus-visible {
-  color: var(--amber-soft);
+  color: var(--accent-soft);
 }
 
 .navActions {
   display: flex;
   align-items: center;
   gap: 14px;
+}
+
+.userName {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  text-decoration: none;
+}
+
+.userName:hover {
+  color: var(--ink);
+}
+
+.navAvatarLink {
+  display: block;
+  line-height: 0;
+}
+
+.navAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--line);
+  transition: border-color 0.15s ease;
+}
+
+.navAvatarLink:hover .navAvatar,
+.navAvatarLink:hover .navAvatarFallback {
+  border-color: var(--accent);
+}
+
+.navAvatarFallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: var(--bg-surface-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  transition: border-color 0.15s ease;
 }
 
 .ghostBtn {
@@ -104,6 +174,9 @@
   font-size: 0.9rem;
   cursor: pointer;
   padding: 8px 4px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
 }
 
 .ghostBtn:hover {
@@ -111,148 +184,173 @@
 }
 
 .primaryBtn {
-  background: var(--amber);
-  color: #1a1310;
+  background: var(--accent);
+  color: #170905;
   border: none;
-  border-radius: 999px;
+  border-radius: 3px;
   padding: 9px 18px;
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 0.88rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s ease;
 }
 
 .primaryBtn:hover {
-  background: var(--amber-soft);
-  transform: translateY(-1px);
+  background: var(--accent-soft);
 }
 
-/* ---------- Hero ---------- */
+/* ---------- Hero: capa de disco + liner notes ---------- */
 
 .hero {
   position: relative;
   z-index: 1;
-  padding: 88px 32px 72px;
-  display: flex;
-  flex-direction: column;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 64px 32px 88px;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 64px;
   align-items: center;
-  text-align: center;
+}
+
+/* "capa" à esquerda — container do canvas Three.js */
+.sleeve {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle at 50% 45%, #1a1518, #08070a 78%);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55);
+}
+
+.sleeveCatalog {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  z-index: 2;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+/* liner notes à direita */
+.linerNotes {
+  min-width: 0;
 }
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
+  font-size: 0.74rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--teal);
-  margin-bottom: 18px;
+  color: var(--moss);
+  margin-bottom: 16px;
+  display: block;
 }
 
 .heroTitle {
   font-family: var(--font-display);
-  font-weight: 500;
-  font-size: clamp(2.4rem, 5.2vw, 4.4rem);
-  line-height: 1.06;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 4.2vw, 3.6rem);
+  line-height: 1.04;
   letter-spacing: -0.02em;
-  max-width: 16ch;
   color: var(--ink);
 }
 
 .heroTitle em {
-  font-style: italic;
-  color: var(--amber);
+  font-style: normal;
+  color: var(--accent);
 }
 
 .heroSub {
-  margin-top: 20px;
+  margin-top: 18px;
   max-width: 46ch;
   color: var(--ink-muted);
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   line-height: 1.55;
 }
 
-/* waveform — assinatura visual da página */
-.waveform {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 40px;
-  margin: 34px 0 6px;
-}
-
-.waveform span {
-  width: 4px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, var(--amber-soft), var(--teal));
-  animation: wave 1.15s ease-in-out infinite;
-}
-
-@keyframes wave {
-  0%, 100% { height: 8px; opacity: 0.55; }
-  50% { height: var(--h, 32px); opacity: 1; }
-}
-
 .searchWrap {
-  margin-top: 30px;
-  width: 100%;
-  max-width: 560px;
+  margin-top: 32px;
+  max-width: 460px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
 }
 
 .searchWrap :global(.ant-input-affix-wrapper) {
-  background: var(--bg-surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 12px 20px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  padding: 8px 0;
+  box-shadow: none !important;
 }
 
 .searchWrap :global(.ant-input) {
   background: transparent;
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 0.98rem;
+  font-size: 1rem;
 }
 
 .searchWrap :global(.ant-input)::placeholder {
   color: var(--ink-faint);
 }
 
-.searchWrap :global(.ant-input-affix-wrapper:focus),
-.searchWrap :global(.ant-input-affix-wrapper-focused) {
-  border-color: var(--amber);
-  box-shadow: 0 0 0 3px rgba(232, 150, 60, 0.15);
-}
-
-.heroStats {
-  margin-top: 40px;
+/* lista estilo "faixas" com os 3 passos de uso — numeração literal, condiz com o assunto */
+.heroTracklist {
+  margin-top: 44px;
   display: flex;
-  gap: 40px;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.heroTrack {
+  display: flex;
+  align-items: baseline;
+  gap: 18px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.heroTrackNum {
   font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--accent-soft);
+  flex-shrink: 0;
+  width: 22px;
 }
 
-.heroStat {
-  text-align: center;
+.heroTrackLabel {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  font-size: 0.98rem;
+  flex-shrink: 0;
+  width: 130px;
+  color: var(--ink);
 }
 
-.heroStatNum {
-  display: block;
-  font-size: 1.3rem;
-  color: var(--amber-soft);
+.heroTrackDesc {
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
-.heroStatLabel {
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-/* ---------- Sections ---------- */
+/* ---------- Cabeçalho de seção (editorial, sem ícone genérico) ---------- */
 
 .section {
   position: relative;
   z-index: 1;
-  padding: 56px 32px;
+  padding: 52px 32px;
   max-width: 1180px;
   margin: 0 auto;
 }
@@ -261,27 +359,33 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 26px;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
-  padding-bottom: 14px;
+}
+
+.sectionEyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--moss);
+  display: block;
+  margin-bottom: 6px;
 }
 
 .sectionTitle {
   font-family: var(--font-display);
-  font-weight: 500;
-  font-size: 1.55rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.sectionTitle svg {
-  color: var(--teal);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.015em;
+  color: var(--ink);
 }
 
 .sectionLink {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
   color: var(--ink-muted);
   text-decoration: none;
   display: flex;
@@ -291,38 +395,42 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  text-transform: uppercase;
 }
 
 .sectionLink:hover {
-  color: var(--amber-soft);
+  color: var(--accent-soft);
 }
 
-/* ---------- Albums (vinyl cards — elemento assinatura) ---------- */
+/* ---------- Albums (capa com disco saindo — assinatura) ---------- */
 
 .albumGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 22px;
+  gap: 24px;
 }
 
 .albumCard {
   cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .albumSleeve {
   position: relative;
   aspect-ratio: 1 / 1;
-  border-radius: 6px;
+  border-radius: 3px;
   overflow: visible;
 }
 
 .albumCover {
   position: absolute;
   inset: 0;
-  border-radius: 6px;
+  border-radius: 3px;
   overflow: hidden;
   background: var(--bg-surface-raised);
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.4);
   transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
   z-index: 2;
 }
@@ -341,10 +449,10 @@
   align-items: flex-end;
   padding: 10px;
   font-family: var(--font-display);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9rem;
   color: var(--ink-muted);
-  background: linear-gradient(150deg, #322c36, #14121a 130%);
+  background: linear-gradient(150deg, #201a1c, #0e0c0e 130%);
 }
 
 .loadingRow {
@@ -352,7 +460,8 @@
   align-items: center;
   gap: 10px;
   color: var(--ink-muted);
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
   padding: 24px 0;
 }
 
@@ -364,11 +473,11 @@
   aspect-ratio: 1 / 1;
   transform: translateY(-50%) translateX(0%);
   border-radius: 50%;
-  background: repeating-radial-gradient(circle at center, #100e12 0px, #100e12 2px, #17141a 3px, #17141a 5px);
-  box-shadow: 0 0 0 1px rgba(244, 239, 230, 0.06);
+  background: repeating-radial-gradient(circle at center, #050405 0px, #050405 2px, #100d10 3px, #100d10 5px);
+  box-shadow: 0 0 0 1px rgba(237, 230, 214, 0.06);
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.28s ease, transform 0.6s linear;
+  transition: opacity 0.28s ease;
 }
 
 .albumDisc::after {
@@ -376,7 +485,7 @@
   position: absolute;
   inset: 38%;
   border-radius: 50%;
-  background: var(--amber);
+  background: var(--accent);
 }
 
 .albumCard:hover .albumCover {
@@ -385,10 +494,10 @@
 
 .albumCard:hover .albumDisc {
   opacity: 1;
-  animation: spin 2.4s linear infinite;
+  animation: spin2 2.4s linear infinite;
 }
 
-@keyframes spin {
+@keyframes spin2 {
   from { transform: translateY(-50%) rotate(0deg); }
   to { transform: translateY(-50%) rotate(360deg); }
 }
@@ -424,7 +533,7 @@
 }
 
 .ratingDotFilled {
-  background: var(--amber);
+  background: var(--accent);
 }
 
 /* ---------- Artists ---------- */
@@ -442,7 +551,7 @@
   margin: 0 auto 10px;
   border-radius: 50%;
   padding: 3px;
-  background: conic-gradient(var(--amber), var(--teal), var(--amber));
+  background: conic-gradient(var(--accent), var(--moss), var(--accent));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -458,6 +567,7 @@
   justify-content: center;
   overflow: hidden;
   font-family: var(--font-display);
+  font-weight: 700;
   font-size: 1.3rem;
   color: var(--ink);
 }
@@ -475,7 +585,7 @@
 
 .artistCount {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--ink-faint);
   margin-top: 2px;
 }
@@ -502,7 +612,7 @@
 .reviewCover {
   width: 52px;
   height: 52px;
-  border-radius: 5px;
+  border-radius: 3px;
   flex-shrink: 0;
 }
 
@@ -519,7 +629,7 @@
 }
 
 .reviewUser {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
 }
 
@@ -528,13 +638,13 @@
 }
 
 .reviewAlbum {
-  color: var(--amber-soft);
+  color: var(--accent-soft);
   font-weight: 600;
 }
 
 .reviewMeta {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--ink-faint);
   margin-left: auto;
 }
@@ -556,12 +666,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   color: var(--ink-faint);
   font-family: var(--font-mono);
 }
 
 /* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding-top: 44px;
+  }
+
+  .sleeve {
+    max-width: 340px;
+    margin: 0 auto;
+  }
+}
 
 @media (max-width: 720px) {
   .navLinks {
@@ -573,15 +696,15 @@
   }
 
   .hero {
-    padding: 56px 18px 48px;
+    padding: 40px 18px 56px;
   }
 
   .section {
-    padding: 40px 18px;
+    padding: 36px 18px;
   }
 
-  .heroStats {
-    gap: 24px;
+  .heroTrackLabel {
+    width: 100px;
   }
 
   .footer {
@@ -592,7 +715,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .waveform span,
   .albumCard:hover .albumDisc {
     animation: none !important;
   }

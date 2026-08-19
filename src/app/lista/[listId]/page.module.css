@@ -1,0 +1,207 @@
+/* src/app/lista/[listId]/page.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+.page {
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
+  --amber: var(--accent);
+  --amber-soft: var(--accent-soft);
+  --teal: var(--moss);
+  --red: #d64545;
+
+  min-height: 100vh;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0 32px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  color: var(--ink-muted);
+}
+
+.header {
+  max-width: 780px;
+  margin: 24px auto 0;
+  padding: 0 32px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+}
+
+.owner {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+  margin-top: 6px;
+  text-decoration: none;
+}
+
+.owner:hover {
+  color: var(--ink);
+}
+
+.count {
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+  margin-top: 2px;
+}
+
+.deleteListBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink-faint);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.deleteListBtn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.hint {
+  margin-top: 10px;
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+.section {
+  max-width: 780px;
+  margin: 28px auto 0;
+  padding: 0 32px;
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.itemRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+.itemRowDragging {
+  opacity: 0.4;
+}
+
+.itemRowOver {
+  border-color: var(--amber);
+}
+
+.dragHandle {
+  color: var(--ink-faint);
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.itemPosition {
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.itemCover {
+  width: 48px;
+  height: 48px;
+  border-radius: 5px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-surface-raised);
+}
+
+.itemInfo {
+  flex: 1;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.itemTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemArtist {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itemRemoveBtn {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 6px;
+}
+
+.itemRemoveBtn:hover {
+  color: var(--red);
+}
+
+.emptyState {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 0.88rem;
+}

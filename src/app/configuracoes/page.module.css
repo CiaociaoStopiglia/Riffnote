@@ -1,0 +1,337 @@
+/* src/app/configuracoes/page.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.page {
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
+  --amber: var(--accent);
+  --amber-soft: var(--accent-soft);
+  --teal: var(--moss);
+  --red: #d64545;
+
+  min-height: 100vh;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0 32px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  color: var(--ink-muted);
+}
+
+.pageTitle {
+  max-width: 980px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+}
+
+.layout {
+  max-width: 980px;
+  margin: 28px auto 0;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ---------- Navegação lateral ---------- */
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 24px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.navItem:hover {
+  background: var(--bg-surface);
+  color: var(--ink);
+}
+
+.navItemActive {
+  background: var(--bg-surface);
+  color: var(--amber);
+}
+
+/* ---------- Cartão de seção ---------- */
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 28px;
+  margin-bottom: 24px;
+}
+
+.cardTitle {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.cardSub {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  margin-bottom: 22px;
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.labelHelp {
+  font-weight: 400;
+  color: var(--ink-faint);
+  font-size: 0.74rem;
+  margin-left: 6px;
+}
+
+.helpText {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.field :global(.ant-input),
+.field :global(.ant-input-affix-wrapper),
+.field :global(.ant-select-selector) {
+  background: var(--bg-void) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.field :global(.ant-input)::placeholder {
+  color: var(--ink-faint);
+}
+
+.field :global(.ant-input:focus),
+.field :global(.ant-input-affix-wrapper:focus),
+.field :global(.ant-input-affix-wrapper-focused) {
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 0 3px rgba(232, 150, 60, 0.15) !important;
+}
+
+.radioGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.radioOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.radioOption:hover {
+  border-color: var(--ink-faint);
+}
+
+.radioOptionActive {
+  border-color: var(--amber);
+  background: rgba(232, 150, 60, 0.06);
+}
+
+.radioDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radioDotActive {
+  border-color: var(--amber);
+}
+
+.radioDotActive::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+.radioLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.radioDesc {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+}
+
+.saveBtn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--amber);
+  color: #1a1310;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.saveBtn:hover {
+  background: var(--amber-soft);
+}
+
+.saveBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---------- Conta: e-mail e senha ---------- */
+
+.currentValue {
+  font-size: 0.92rem;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.verifiedBadge {
+  font-size: 0.68rem;
+  background: rgba(63, 167, 150, 0.15);
+  color: var(--teal);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.toggleLink {
+  background: none;
+  border: none;
+  color: var(--amber-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 6px;
+}
+
+.toggleLink:hover {
+  text-decoration: underline;
+}
+
+.subForm {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.errorText {
+  color: var(--red);
+  font-size: 0.8rem;
+  margin: -8px 0 14px;
+}
+
+.dangerZone {
+  border-color: rgba(214, 69, 69, 0.35);
+}
+
+@media (max-width: 720px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .nav {
+    flex-direction: row;
+    overflow-x: auto;
+    position: static;
+  }
+
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+
+  .pageTitle,
+  .layout {
+    padding: 0 20px;
+  }
+
+  .backLink {
+    margin-left: 20px;
+  }
+}

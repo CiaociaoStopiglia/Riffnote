@@ -1,19 +1,23 @@
+// src/app/page.jsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Input, Spin } from 'antd';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
-  Disc3,
   Search,
-  TrendingUp,
-  Users,
-  Clock,
-  ChevronRight,
   X,
+  LogOut,
+  Settings,
 } from 'lucide-react';
 import styles from './page.module.css';
-import { fetchTopAlbums, searchAlbums, extractTopArtists } from './lib/musicApi';
+import { fetchTopAlbums, searchAlbums, extractTopArtists, fillMissingArtwork } from './lib/musicApi';
+import { useAuth } from './context/AuthContext';
+
+// Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
+const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
 
 // Atividade "social" ainda é mock — isso viria do seu próprio backend
 // (avaliações e resenhas de usuários), não de uma API de catálogo de música.
@@ -23,7 +27,7 @@ const RECENT_ACTIVITY = [
     user: 'marina.ouve',
     action: 'avaliou',
     album: 'In Rainbows',
-    hue: '#3fa796',
+    hue: '#c9432b',
     time: '2 min',
     text: 'Cada faixa é um encaixe perfeito. "Weird Fishes" me pega toda vez.',
   },
@@ -32,7 +36,7 @@ const RECENT_ACTIVITY = [
     user: 'pedrovinil',
     action: 'resenhou',
     album: 'Currents',
-    hue: '#2f8fd6',
+    hue: '#8a9a5b',
     time: '18 min',
     text: 'Disco de transição que virou obra-prima. A produção envelheceu muito bem.',
   },
@@ -41,20 +45,23 @@ const RECENT_ACTIVITY = [
     user: 'lu.faixas',
     action: 'adicionou à lista',
     album: 'To Pimp a Butterfly',
-    hue: '#8a5cf6',
+    hue: '#5c564a',
     time: '41 min',
     text: 'Começando minha lista de "álbuns que mudam a forma como você ouve rap".',
   },
+];
+
+const HERO_STEPS = [
+  { num: '01', label: 'Registre', desc: 'Todo álbum que você ouvir, guardado no seu histórico.' },
+  { num: '02', label: 'Avalie', desc: 'Nota de 1 a 5 e uma resenha, se quiser escrever.' },
+  { num: '03', label: 'Compartilhe', desc: 'Listas, atividade recente, gente que ouve o que você ouve.' },
 ];
 
 function RatingDots({ value, max = 5 }) {
   return (
     <div className={styles.rating}>
       {Array.from({ length: max }).map((_, i) => (
-        <span
-          key={i}
-          className={`${styles.ratingDot} ${i < value ? styles.ratingDotFilled : ''}`}
-        />
+        <span key={i} className={`${styles.ratingDot} ${i < value ? styles.ratingDotFilled : ''}`} />
       ))}
     </div>
   );
@@ -62,7 +69,7 @@ function RatingDots({ value, max = 5 }) {
 
 function AlbumCard({ album }) {
   return (
-    <div className={styles.albumCard}>
+    <Link href={`/album/${album.id}`} className={styles.albumCard}>
       <div className={styles.albumSleeve}>
         <div className={styles.albumDisc} />
         <div className={styles.albumCover}>
@@ -78,20 +85,22 @@ function AlbumCard({ album }) {
         <div className={styles.albumArtist}>{album.artist}</div>
         <RatingDots value={album.rating} />
       </div>
-    </div>
+    </Link>
   );
 }
 
 export default function Home() {
+  const { user, logOut } = useAuth();
+  const pageRef = useRef(null);
+
   const [query, setQuery] = useState('');
   const [trendingAlbums, setTrendingAlbums] = useState([]);
   const [topArtists, setTopArtists] = useState([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
 
-  const [searchResults, setSearchResults] = useState(null); // null = sem busca ativa
+  const [searchResults, setSearchResults] = useState(null);
   const [searching, setSearching] = useState(false);
 
-  // Carrega o chart oficial da Apple Music assim que a página abre.
   useEffect(() => {
     let cancelled = false;
 
@@ -101,7 +110,10 @@ export default function Home() {
         const albums = await fetchTopAlbums({ limit: 12 });
         if (cancelled) return;
         setTrendingAlbums(albums);
-        setTopArtists(extractTopArtists(albums, 6));
+        const artists = extractTopArtists(albums, 6);
+        fillMissingArtwork(artists).then((filled) => {
+          if (!cancelled) setTopArtists(filled);
+        });
       } catch (err) {
         if (cancelled) return;
         toast.error('Não consegui carregar os álbuns em alta agora.');
@@ -144,94 +156,111 @@ export default function Home() {
 
   const showingSearch = searchResults !== null;
 
-  return (
-    <div className={styles.page}>
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          style: {
-            background: '#1c1920',
-            color: '#f4efe6',
-            border: '1px solid #322c36',
-            fontFamily: 'Space Grotesk, sans-serif',
-          },
-        }}
-      />
+  // Move o fundo bem sutilmente seguindo o mouse pela tela inteira.
+  // Escuta direto na window (em vez de onMouseMove no div) pra não
+  // depender do evento borbulhar através do Canvas do Three.js.
+  useEffect(() => {
+    function handleMouseMove(e) {
+      if (!pageRef.current) return;
+      const x = (e.clientX / window.innerWidth - 0.5) * 2; // -1 a 1
+      const y = (e.clientY / window.innerHeight - 0.5) * 2;
+      pageRef.current.style.setProperty('--mx', x.toFixed(3));
+      pageRef.current.style.setProperty('--my', y.toFixed(3));
+    }
 
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  return (
+    <div className={styles.page} ref={pageRef}>
       {/* Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>
-          <Disc3 size={22} className={styles.logoIcon} />
+          <img src="/logo.png" alt="Riffnote" className={styles.logoIcon} />
           Riffnote
         </div>
         <nav className={styles.navLinks}>
-          <a href="#">Álbuns</a>
-          <a href="#">Artistas</a>
-          <a href="#">Listas</a>
-          <a href="#">Diário</a>
+          <Link href="/albuns">Álbuns</Link>
+          <Link href="/artistas">Artistas</Link>
+          <Link href="/usuarios">Pessoas</Link>
         </nav>
         <div className={styles.navActions}>
-          <button
-            type="button"
-            className={styles.ghostBtn}
-            onClick={() => toast('Login chega na próxima versão.')}
-          >
-            Entrar
-          </button>
-          <button
-            type="button"
-            className={styles.primaryBtn}
-            onClick={() => toast('Cadastro chega na próxima versão.')}
-          >
-            Criar conta
-          </button>
+          {user ? (
+            <>
+              <Link href="/profile" className={styles.navAvatarLink}>
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || 'Perfil'} className={styles.navAvatar} />
+                ) : (
+                  <span className={styles.navAvatarFallback}>
+                    {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </Link>
+              <Link href="/configuracoes" className={styles.ghostBtn} title="Configurações">
+                <Settings size={16} />
+              </Link>
+              <button
+                type="button"
+                className={styles.ghostBtn}
+                onClick={() => {
+                  logOut();
+                  toast('Você saiu da conta.');
+                }}
+              >
+                <LogOut size={16} />
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className={styles.ghostBtn}>
+                Entrar
+              </Link>
+              <Link href="/login?tab=signup" className={styles.primaryBtn}>
+                Criar conta
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero — capa de disco + liner notes */}
       <section className={styles.hero}>
-        <span className={styles.eyebrow}>seu diário de escuta</span>
-        <h1 className={styles.heroTitle}>
-          Toda música que você já ouviu, <em>guardada e avaliada.</em>
-        </h1>
-        <p className={styles.heroSub}>
-          Registre álbuns, dê notas, escreva resenhas e monte listas — como um
-          diário de cinema, mas para o que toca no seu fone.
-        </p>
+        <div className={styles.sleeve}>
+          <VinylScene />
+          <span className={styles.sleeveCatalog}>RN · 001 · SIDE A</span>
+        </div>
 
-        <div className={styles.waveform} aria-hidden="true">
-          {[18, 32, 14, 40, 22, 36, 12, 28, 20, 38, 16, 30].map((h, i) => (
-            <span
-              key={i}
-              style={{ '--h': `${h}px`, animationDelay: `${i * 0.07}s` }}
+        <div className={styles.linerNotes}>
+          <span className={styles.eyebrow}>modelo RN-001 — diário de escuta pessoal</span>
+          <h1 className={styles.heroTitle}>
+            Toda música <em>guardada</em>. Toda nota <em>registrada</em>.
+          </h1>
+          <p className={styles.heroSub}>
+            Riffnote é onde você anota o que ouviu — como um diário de cinema,
+            só que pra o que toca no seu fone.
+          </p>
+
+          <div className={styles.searchWrap}>
+            <Input
+              size="large"
+              placeholder="Busque um álbum ou artista…"
+              prefix={<Search size={17} color="#5c564a" />}
+              suffix={searching ? <Spin size="small" /> : null}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onPressEnter={handleSearch}
             />
-          ))}
-        </div>
-
-        <div className={styles.searchWrap}>
-          <Input
-            size="large"
-            placeholder="Busque um álbum ou artista…"
-            prefix={<Search size={18} color="#6f6860" />}
-            suffix={searching ? <Spin size="small" /> : null}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onPressEnter={handleSearch}
-          />
-        </div>
-
-        <div className={styles.heroStats}>
-          <div className={styles.heroStat}>
-            <span className={styles.heroStatNum}>340k</span>
-            <span className={styles.heroStatLabel}>álbuns</span>
           </div>
-          <div className={styles.heroStat}>
-            <span className={styles.heroStatNum}>1.2M</span>
-            <span className={styles.heroStatLabel}>avaliações</span>
-          </div>
-          <div className={styles.heroStat}>
-            <span className={styles.heroStatNum}>58k</span>
-            <span className={styles.heroStatLabel}>ouvintes</span>
+
+          <div className={styles.heroTracklist}>
+            {HERO_STEPS.map((step) => (
+              <div key={step.num} className={styles.heroTrack}>
+                <span className={styles.heroTrackNum}>{step.num}</span>
+                <span className={styles.heroTrackLabel}>{step.label}</span>
+                <span className={styles.heroTrackDesc}>{step.desc}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -239,24 +268,22 @@ export default function Home() {
       {/* Em alta / Resultados de busca */}
       <section className={styles.section}>
         <div className={styles.sectionHead}>
-          <h2 className={styles.sectionTitle}>
-            <TrendingUp size={20} />
-            {showingSearch ? `Resultados para "${query}"` : 'Em alta essa semana'}
-          </h2>
-          {showingSearch ? (
+          <div>
+            <span className={styles.sectionEyebrow}>{showingSearch ? 'busca' : 'chart Apple Music'}</span>
+            <h2 className={styles.sectionTitle}>
+              {showingSearch ? `"${query}"` : 'Em alta essa semana'}
+            </h2>
+          </div>
+          {showingSearch && (
             <button type="button" className={styles.sectionLink} onClick={clearSearch}>
-              limpar busca <X size={14} />
+              limpar <X size={13} />
             </button>
-          ) : (
-            <a href="#" className={styles.sectionLink}>
-              ver tudo <ChevronRight size={14} />
-            </a>
           )}
         </div>
 
         {loadingTrending && !showingSearch ? (
           <div className={styles.loadingRow}>
-            <Spin /> <span>carregando o chart da Apple Music…</span>
+            <Spin /> <span>carregando o chart…</span>
           </div>
         ) : (
           <div className={styles.albumGrid}>
@@ -271,28 +298,24 @@ export default function Home() {
       {!showingSearch && (
         <section className={styles.section}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>
-              <Users size={20} />
-              Artistas em destaque
-            </h2>
-            <a href="#" className={styles.sectionLink}>
-              ver tudo <ChevronRight size={14} />
-            </a>
+            <div>
+              <span className={styles.sectionEyebrow}>a partir do chart</span>
+              <h2 className={styles.sectionTitle}>Artistas em destaque</h2>
+            </div>
+            <Link href="/artistas" className={styles.sectionLink}>
+              ver todos
+            </Link>
           </div>
           <div className={styles.artistRow}>
             {topArtists.map((artist) => (
-              <div key={artist.name}>
+              <Link href={`/artista/${artist.artistId}`} key={artist.name} style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className={styles.artistAvatarRing}>
                   <div className={styles.artistAvatar}>
-                    {artist.artwork ? (
-                      <img src={artist.artwork} alt={artist.name} />
-                    ) : (
-                      artist.name.charAt(0)
-                    )}
+                    {artist.artwork ? <img src={artist.artwork} alt={artist.name} /> : artist.name.charAt(0)}
                   </div>
                 </div>
                 <div className={styles.artistName}>{artist.name}</div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -302,20 +325,17 @@ export default function Home() {
       {!showingSearch && (
         <section className={styles.section}>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>
-              <Clock size={20} />
-              Atividade recente
-            </h2>
-            <a href="#" className={styles.sectionLink}>
-              ver tudo <ChevronRight size={14} />
-            </a>
+            <div>
+              <span className={styles.sectionEyebrow}>ao vivo</span>
+              <h2 className={styles.sectionTitle}>Atividade recente</h2>
+            </div>
           </div>
           <div className={styles.activityFeed}>
             {RECENT_ACTIVITY.map((item) => (
               <div key={item.id} className={styles.reviewCard}>
                 <div
                   className={styles.reviewCover}
-                  style={{ background: `linear-gradient(150deg, ${item.hue}, #14121a 130%)` }}
+                  style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
                 />
                 <div className={styles.reviewBody}>
                   <div className={styles.reviewHeader}>
@@ -333,7 +353,7 @@ export default function Home() {
       )}
 
       <footer className={styles.footer}>
-        <span>Riffnote © 2026</span>
+        <span>RIFFNOTE © 2026</span>
         <span>feito por quem vive de fone no ouvido</span>
       </footer>
     </div>

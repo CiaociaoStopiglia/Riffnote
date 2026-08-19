@@ -1,0 +1,148 @@
+/* src/app/components/AuthModal.module.css */
+.wrap {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  color: #f4efe6;
+}
+
+/* O Modal do Ant Design é renderizado fora da árvore do componente (via
+   portal, direto no <body>), então não basta estilizar .wrap — precisamos
+   sobrescrever as classes globais do antd aqui mesmo. */
+:global(.ant-modal-content) {
+  background: #1c1920 !important;
+  border: 1px solid #322c36;
+  border-radius: 12px !important;
+}
+
+:global(.ant-modal-close) {
+  color: #a89f92;
+}
+
+.wrap :global(.ant-input),
+.wrap :global(.ant-input-affix-wrapper) {
+  background: #14121a !important;
+  border: 1px solid #322c36 !important;
+  color: #f4efe6 !important;
+}
+
+.wrap :global(.ant-input)::placeholder {
+  color: #6f6860;
+}
+
+.wrap :global(.ant-input-affix-wrapper:focus),
+.wrap :global(.ant-input-affix-wrapper-focused),
+.wrap :global(.ant-input:focus) {
+  border-color: #e8963c !important;
+  box-shadow: 0 0 0 3px rgba(232, 150, 60, 0.15) !important;
+}
+
+.wrap :global(.ant-input-password-icon) {
+  color: #a89f92;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid #322c36;
+}
+
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-family: inherit;
+  font-size: 0.92rem;
+  color: #a89f92;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tabActive {
+  color: #f4efe6;
+  border-bottom-color: #e8963c;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 0.78rem;
+  color: #a89f92;
+}
+
+.submitBtn {
+  margin-top: 6px;
+  background: #e8963c;
+  color: #1a1310;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 0;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.submitBtn:hover {
+  background: #f2b46b;
+}
+
+.submitBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0;
+  color: #6f6860;
+  font-size: 0.75rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #322c36;
+}
+
+.googleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #1c1920;
+  border: 1px solid #322c36;
+  border-radius: 999px;
+  padding: 10px 0;
+  color: #f4efe6;
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.googleBtn:hover {
+  border-color: #6f6860;
+}
+
+.errorText {
+  color: #d64545;
+  font-size: 0.8rem;
+  margin-top: -4px;
+}

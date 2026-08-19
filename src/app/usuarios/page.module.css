@@ -1,0 +1,213 @@
+/* src/app/usuarios/page.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.page {
+  --bg-void: #121014;
+  --bg-surface: #1c1920;
+  --bg-surface-raised: #242028;
+  --line: #322c36;
+  --ink: #f4efe6;
+  --ink-muted: #a89f92;
+  --ink-faint: #6f6860;
+  --amber: #e8963c;
+  --amber-soft: #f2b46b;
+
+  min-height: 100vh;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0 32px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.pageHeader {
+  max-width: 800px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+}
+
+.pageTitle {
+  font-weight: 800;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+}
+
+.pageSub {
+  color: var(--ink-muted);
+  font-size: 0.9rem;
+  margin-top: 6px;
+}
+
+.searchWrap {
+  max-width: 800px;
+  margin: 24px auto 0;
+  padding: 0 32px;
+}
+
+.searchWrap :global(.ant-input-affix-wrapper) {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 18px;
+}
+
+.searchWrap :global(.ant-input) {
+  background: transparent;
+  color: var(--ink);
+}
+
+.searchWrap :global(.ant-input)::placeholder {
+  color: var(--ink-faint);
+}
+
+.section {
+  max-width: 800px;
+  margin: 32px auto 0;
+  padding: 0 32px;
+}
+
+.sectionTitle {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.userList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.userRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 8px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.userRow:hover {
+  background: var(--bg-surface);
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--bg-surface-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--ink-muted);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.userInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.userName {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.userBio {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.followBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.followBtnFollow {
+  background: var(--amber);
+  color: #1a1310;
+}
+
+.followBtnFollow:hover {
+  background: var(--amber-soft);
+}
+
+.followBtnFollowing {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink-muted);
+}
+
+.followBtnFollowing:hover {
+  border-color: #d64545;
+  color: #d64545;
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  padding: 20px 0;
+}
+
+.emptyState {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .pageHeader,
+  .searchWrap,
+  .section {
+    padding: 0 20px;
+  }
+
+  .backLink {
+    margin-left: 20px;
+  }
+}
