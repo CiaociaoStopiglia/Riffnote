@@ -20,6 +20,10 @@ function translateAuthError(code) {
     'auth/invalid-credential': 'E-mail ou senha incorretos.',
     'auth/too-many-requests': 'Muitas tentativas. Espera um pouco e tenta de novo.',
     'auth/popup-closed-by-user': 'Login cancelado.',
+    'auth/account-exists-with-different-credential':
+      'Esse e-mail já está associado a outro jeito de login (ex: senha ou Google).',
+    'auth/operation-not-allowed':
+      'Esse login ainda não foi ativado no Firebase. Confere o Console.',
   };
   return map[code] || 'Algo deu errado. Tenta de novo.';
 }

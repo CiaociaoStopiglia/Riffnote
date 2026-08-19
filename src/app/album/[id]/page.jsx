@@ -8,7 +8,7 @@ import { Spin, Input } from 'antd';
 import toast from 'react-hot-toast';
 import { ArrowLeft, Play, Trash2, Bookmark, BookmarkCheck, ListPlus, Plus, Check } from 'lucide-react';
 import { fetchAlbumFull } from '../../lib/musicApi';
-import { getUserRating, rateAlbum, removeRating } from '../../lib/ratings';
+import { getUserRating, rateAlbum, removeRating, getAlbumStats } from '../../lib/ratings';
 import {
   getUserTrackRatingsForAlbum,
   rateTrack,
@@ -40,6 +40,7 @@ export default function AlbumPage() {
   const [myReview, setMyReview] = useState('');
   const [savingRating, setSavingRating] = useState(false);
   const [hasRating, setHasRating] = useState(false);
+  const [communityStats, setCommunityStats] = useState(null); // { average, count }
 
   const [inListenlist, setInListenlist] = useState(false);
   const [listenlistBusy, setListenlistBusy] = useState(false);
@@ -72,6 +73,12 @@ export default function AlbumPage() {
     return () => {
       cancelled = true;
     };
+  }, [id]);
+
+  // Média da comunidade — carrega mesmo sem estar logado.
+  useEffect(() => {
+    if (!id) return;
+    getAlbumStats(id).then(setCommunityStats).catch(() => {});
   }, [id]);
 
   useEffect(() => {
@@ -281,13 +288,29 @@ export default function AlbumPage() {
         <div className={styles.headerInfo}>
           <span className={styles.eyebrow}>Álbum</span>
           <h1 className={styles.title}>{album.title}</h1>
-          <div className={styles.artist}>{album.artist}</div>
+          {album.artistId ? (
+            <Link href={`/artista/${album.artistId}`} className={styles.artistLink}>
+              {album.artist}
+            </Link>
+          ) : (
+            <div className={styles.artist}>{album.artist}</div>
+          )}
 
           <div className={styles.metaRow}>
             {releaseYear && <span>{releaseYear}</span>}
             {album.genre && <span>{album.genre}</span>}
             {album.trackCount && <span>{album.trackCount} faixas</span>}
           </div>
+
+          {communityStats && communityStats.count > 0 && (
+            <div className={styles.communityRating}>
+              <StarRating value={communityStats.average} readOnly size={16} />
+              <span className={styles.communityRatingText}>
+                {communityStats.average.toFixed(1)} · {communityStats.count}{' '}
+                avaliação{communityStats.count > 1 ? 'ões' : ''} na comunidade
+              </span>
+            </div>
+          )}
 
           {user ? (
             <>

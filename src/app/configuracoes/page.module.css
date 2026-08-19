@@ -23,7 +23,7 @@
   font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
   padding-bottom: 60px;
 }
-
+ 
 .backLink {
   display: inline-flex;
   align-items: center;
@@ -33,11 +33,11 @@
   text-decoration: none;
   font-size: 0.85rem;
 }
-
+ 
 .backLink:hover {
   color: var(--ink);
 }
-
+ 
 .loadingPage {
   min-height: 100vh;
   display: flex;
@@ -46,7 +46,7 @@
   background: var(--bg-void);
   color: var(--ink-muted);
 }
-
+ 
 .pageTitle {
   max-width: 980px;
   margin: 20px auto 0;
@@ -55,7 +55,7 @@
   font-size: 1.8rem;
   letter-spacing: -0.02em;
 }
-
+ 
 .layout {
   max-width: 980px;
   margin: 28px auto 0;
@@ -65,9 +65,9 @@
   gap: 40px;
   align-items: start;
 }
-
+ 
 /* ---------- Navegação lateral ---------- */
-
+ 
 .nav {
   display: flex;
   flex-direction: column;
@@ -75,7 +75,7 @@
   position: sticky;
   top: 24px;
 }
-
+ 
 .navItem {
   display: flex;
   align-items: center;
@@ -90,19 +90,19 @@
   color: var(--ink-muted);
   cursor: pointer;
 }
-
+ 
 .navItem:hover {
   background: var(--bg-surface);
   color: var(--ink);
 }
-
+ 
 .navItemActive {
   background: var(--bg-surface);
   color: var(--amber);
 }
-
+ 
 /* ---------- Cartão de seção ---------- */
-
+ 
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--line);
@@ -110,52 +110,110 @@
   padding: 28px;
   margin-bottom: 24px;
 }
-
+ 
 .cardTitle {
   font-weight: 700;
   font-size: 1.1rem;
   margin-bottom: 4px;
 }
-
+ 
 .cardSub {
   color: var(--ink-muted);
   font-size: 0.82rem;
   margin-bottom: 22px;
 }
-
+ 
 .grid2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 18px;
 }
-
+ 
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-bottom: 18px;
 }
-
+ 
+.frameGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 14px;
+}
+ 
+.frameOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 4px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+ 
+.frameOption:hover {
+  background: var(--bg-void);
+}
+ 
+.frameOptionActive {
+  border-color: var(--amber);
+  background: rgba(232, 150, 60, 0.06);
+}
+ 
+.framePreview {
+  width: 60px;
+  height: 60px;
+}
+ 
+.framePreviewAvatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-surface-raised, #242028);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-weight: 700;
+  color: var(--ink-muted);
+}
+ 
+.framePreviewAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+ 
+.frameLabel {
+  font-size: 0.72rem;
+  color: var(--ink-muted);
+  text-align: center;
+}
+ 
 .label {
   font-size: 0.8rem;
   font-weight: 600;
   color: var(--ink-muted);
 }
-
+ 
 .labelHelp {
   font-weight: 400;
   color: var(--ink-faint);
   font-size: 0.74rem;
   margin-left: 6px;
 }
-
+ 
 .helpText {
   font-size: 0.76rem;
   color: var(--ink-faint);
   margin-top: 2px;
   line-height: 1.4;
 }
-
+ 
 .field :global(.ant-input),
 .field :global(.ant-input-affix-wrapper),
 .field :global(.ant-select-selector) {
@@ -163,24 +221,24 @@
   border: 1px solid var(--line) !important;
   color: var(--ink) !important;
 }
-
+ 
 .field :global(.ant-input)::placeholder {
   color: var(--ink-faint);
 }
-
+ 
 .field :global(.ant-input:focus),
 .field :global(.ant-input-affix-wrapper:focus),
 .field :global(.ant-input-affix-wrapper-focused) {
   border-color: var(--amber) !important;
   box-shadow: 0 0 0 3px rgba(232, 150, 60, 0.15) !important;
 }
-
+ 
 .radioGroup {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
+ 
 .radioOption {
   display: flex;
   align-items: flex-start;
@@ -191,16 +249,16 @@
   cursor: pointer;
   transition: border-color 0.15s ease;
 }
-
+ 
 .radioOption:hover {
   border-color: var(--ink-faint);
 }
-
+ 
 .radioOptionActive {
   border-color: var(--amber);
   background: rgba(232, 150, 60, 0.06);
 }
-
+ 
 .radioDot {
   width: 16px;
   height: 16px;
@@ -212,11 +270,11 @@
   align-items: center;
   justify-content: center;
 }
-
+ 
 .radioDotActive {
   border-color: var(--amber);
 }
-
+ 
 .radioDotActive::after {
   content: '';
   width: 8px;
@@ -224,18 +282,18 @@
   border-radius: 50%;
   background: var(--amber);
 }
-
+ 
 .radioLabel {
   font-size: 0.88rem;
   font-weight: 600;
 }
-
+ 
 .radioDesc {
   font-size: 0.78rem;
   color: var(--ink-faint);
   margin-top: 2px;
 }
-
+ 
 .saveBtn {
   display: flex;
   align-items: center;
@@ -250,18 +308,18 @@
   cursor: pointer;
   transition: background 0.15s ease;
 }
-
+ 
 .saveBtn:hover {
   background: var(--amber-soft);
 }
-
+ 
 .saveBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
+ 
 /* ---------- Conta: e-mail e senha ---------- */
-
+ 
 .currentValue {
   font-size: 0.92rem;
   color: var(--ink);
@@ -270,7 +328,7 @@
   gap: 10px;
   margin-bottom: 4px;
 }
-
+ 
 .verifiedBadge {
   font-size: 0.68rem;
   background: rgba(63, 167, 150, 0.15);
@@ -279,7 +337,7 @@
   border-radius: 999px;
   font-weight: 700;
 }
-
+ 
 .toggleLink {
   background: none;
   border: none;
@@ -290,47 +348,47 @@
   padding: 0;
   margin-top: 6px;
 }
-
+ 
 .toggleLink:hover {
   text-decoration: underline;
 }
-
+ 
 .subForm {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--line);
 }
-
+ 
 .errorText {
   color: var(--red);
   font-size: 0.8rem;
   margin: -8px 0 14px;
 }
-
+ 
 .dangerZone {
   border-color: rgba(214, 69, 69, 0.35);
 }
-
+ 
 @media (max-width: 720px) {
   .layout {
     grid-template-columns: 1fr;
   }
-
+ 
   .nav {
     flex-direction: row;
     overflow-x: auto;
     position: static;
   }
-
+ 
   .grid2 {
     grid-template-columns: 1fr;
   }
-
+ 
   .pageTitle,
   .layout {
     padding: 0 20px;
   }
-
+ 
   .backLink {
     margin-left: 20px;
   }

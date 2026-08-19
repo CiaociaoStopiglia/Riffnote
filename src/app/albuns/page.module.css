@@ -43,6 +43,51 @@
   padding: 0 32px;
 }
 
+.searchWrap {
+  max-width: 1180px;
+  margin: 24px auto 0;
+  padding: 0 32px;
+}
+
+.searchWrap :global(.ant-input-affix-wrapper) {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 18px;
+  max-width: 460px;
+}
+
+.searchWrap :global(.ant-input) {
+  background: transparent;
+  color: var(--ink);
+}
+
+.searchWrap :global(.ant-input)::placeholder {
+  color: var(--ink-faint);
+}
+
+.trackResultsBlock {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.trackResultsLabel {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.trackResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .pageTitle {
   font-weight: 800;
   font-size: 2rem;

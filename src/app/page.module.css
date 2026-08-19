@@ -345,6 +345,63 @@
   line-height: 1.4;
 }
 
+/* ---------- Desenho de linha original (toca-discos) ---------- */
+/* Seção de fechamento — fica sozinha no fim da página, sem disputar
+   espaço com conteúdo funcional (busca, álbuns, faixas). */
+
+.drawingSection {
+  max-width: 620px;
+  margin: 90px auto 40px;
+  padding: 0 32px;
+  text-align: center;
+}
+
+.drawingLabel {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 24px;
+}
+
+.drawingSvg {
+  width: 100%;
+  max-width: 380px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  opacity: 0.9;
+}
+
+.drawStroke {
+  stroke: var(--ink-muted);
+  stroke-width: 1.4;
+}
+
+.drawStrokeAccent {
+  stroke: var(--accent);
+  stroke-width: 1.8;
+}
+
+/* ---------- Frase grande de destaque ---------- */
+
+.statementWrap {
+  max-width: 900px;
+  margin: 70px auto;
+  padding: 0 32px;
+}
+
+.statement {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3.4vw, 2.6rem);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
 /* ---------- Cabeçalho de seção (editorial, sem ícone genérico) ---------- */
 
 .section {
@@ -408,6 +465,28 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 24px;
+}
+
+.trackResultsBlock {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.trackResultsLabel {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--moss);
+  display: block;
+  margin-bottom: 14px;
+}
+
+.trackResultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .albumCard {

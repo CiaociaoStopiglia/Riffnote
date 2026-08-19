@@ -18,9 +18,29 @@
 }
 
 .filled {
-  color: #e8963c;
+  color: #e8b43c;
 }
 
 .empty {
   color: #4a4450;
+}
+
+.starIconWrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.starIconWrap svg {
+  display: block;
+}
+
+.starFillClip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  overflow: hidden;
+  display: block;
+  line-height: 0;
 }

@@ -27,6 +27,15 @@ export async function getUserRating(uid, albumId) {
   return snap.exists() ? snap.data() : null;
 }
 
+/**
+ * Média comunitária (todo mundo que avaliou) de UM álbum específico —
+ * usado na página do álbum, ao lado da nota pessoal do usuário.
+ */
+export async function getAlbumStats(albumId) {
+  const snap = await getDoc(doc(db, 'albumStats', String(albumId)));
+  return snap.exists() ? snap.data() : null;
+}
+
 export async function rateAlbum(uid, album, rating, review = '') {
   const userRatingRef = doc(db, 'users', uid, 'ratings', String(album.id));
   const statsRef = doc(db, 'albumStats', String(album.id));

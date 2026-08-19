@@ -16,6 +16,7 @@ import { listUserLists } from '../../lib/lists';
 import { listListenlist } from '../../lib/listenlist';
 import { useAuth } from '../../context/AuthContext';
 import StarRating from '../../components/StarRating';
+import AvatarFrame from '../../components/AvatarFrame';
 import FollowListModal from '../../components/FollowListModal';
 import styles from '../page.module.css';
 
@@ -164,6 +165,7 @@ export default function PublicProfilePage() {
         </div>
 
         <div className={styles.avatarFloat}>
+          <AvatarFrame frame={profile.avatarFrame}>
           <div className={styles.avatarWrap}>
             <div className={styles.avatar}>
               {profile.photoURL ? (
@@ -173,6 +175,7 @@ export default function PublicProfilePage() {
               )}
             </div>
           </div>
+          </AvatarFrame>
         </div>
       </div>
 

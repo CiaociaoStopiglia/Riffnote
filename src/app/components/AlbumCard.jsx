@@ -20,7 +20,7 @@ export default function AlbumCard({ album, average }) {
       {typeof average === 'number' && (
         <>
           <div className={styles.stars}>
-            <StarRating value={Math.round(average)} readOnly size={13} />
+            <StarRating value={average} readOnly size={13} />
           </div>
           <div className={styles.avgLabel}>{average.toFixed(1)}/5</div>
         </>

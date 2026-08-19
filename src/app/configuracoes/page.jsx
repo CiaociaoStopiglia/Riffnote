@@ -12,6 +12,7 @@ import { updateProfile as updateAuthProfile } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
 import { changeEmail, changePassword } from '../lib/account';
 import { useAuth } from '../context/AuthContext';
+import AvatarFrame, { AVATAR_FRAMES } from '../components/AvatarFrame';
 import styles from './page.module.css';
 
 const PRONOUN_OPTIONS = [
@@ -70,6 +71,7 @@ export default function SettingsPage() {
     website: '',
     bio: '',
     pronoun: '',
+    avatarFrame: 'none',
   });
   const [repliesPermission, setRepliesPermission] = useState('anyone');
 
@@ -110,6 +112,7 @@ export default function SettingsPage() {
             website: data.website || '',
             bio: data.bio || '',
             pronoun: data.pronoun || '',
+            avatarFrame: data.avatarFrame || 'none',
           });
           setRepliesPermission(data.repliesPermission || 'anyone');
         }
@@ -259,7 +262,47 @@ export default function SettingsPage() {
         <div>
           {/* ---------------- PERFIL ---------------- */}
           {section === 'perfil' && (
-            <div className={styles.card}>
+            <>
+              <div className={styles.card}>
+                <div className={styles.cardTitle}>Moldura do avatar</div>
+                <div className={styles.cardSub}>
+                  Um efeito animado ao redor da sua foto de perfil. Aparece em todo lugar
+                  que sua foto aparece no Riffnote.
+                </div>
+
+                <div className={styles.frameGrid}>
+                  {AVATAR_FRAMES.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      className={`${styles.frameOption} ${
+                        form.avatarFrame === f.id ? styles.frameOptionActive : ''
+                      }`}
+                      onClick={() => updateField('avatarFrame', f.id)}
+                    >
+                      <div className={styles.framePreview}>
+                        <AvatarFrame frame={f.id}>
+                          <div className={styles.framePreviewAvatar}>
+                            {user.photoURL ? (
+                              <img src={user.photoURL} alt="" />
+                            ) : (
+                              (user.displayName || user.email || '?').charAt(0).toUpperCase()
+                            )}
+                          </div>
+                        </AvatarFrame>
+                      </div>
+                      <span className={styles.frameLabel}>{f.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <button type="button" className={styles.saveBtn} onClick={handleSaveProfile} disabled={savingProfile} style={{ marginTop: 20 }}>
+                  <Save size={15} />
+                  {savingProfile ? 'Salvando…' : 'Salvar moldura'}
+                </button>
+              </div>
+
+              <div className={styles.card}>
               <div className={styles.cardTitle}>Informações do perfil</div>
               <div className={styles.cardSub}>
                 Como seu perfil aparece pra outras pessoas no Riffnote.
@@ -341,7 +384,8 @@ export default function SettingsPage() {
                 <Save size={15} />
                 {savingProfile ? 'Salvando…' : 'Salvar alterações'}
               </button>
-            </div>
+              </div>
+            </>
           )}
 
           {/* ---------------- CONTA ---------------- */}

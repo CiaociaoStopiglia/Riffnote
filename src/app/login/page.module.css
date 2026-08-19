@@ -17,7 +17,7 @@
   --teal: var(--moss);
   --red: #d64545;
 
-  min-height: 100vh;
+   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -28,7 +28,7 @@
   position: relative;
   overflow: hidden;
 }
-
+ 
 .page::before {
   content: '';
   position: absolute;
@@ -37,7 +37,7 @@
   background-size: 3px 3px;
   pointer-events: none;
 }
-
+ 
 .backLink {
   position: absolute;
   top: 28px;
@@ -50,11 +50,11 @@
   font-size: 0.85rem;
   z-index: 2;
 }
-
+ 
 .backLink:hover {
   color: var(--ink);
 }
-
+ 
 .card {
   position: relative;
   z-index: 1;
@@ -65,7 +65,7 @@
   border-radius: 14px;
   padding: 36px 32px;
 }
-
+ 
 .logo {
   display: flex;
   align-items: center;
@@ -77,25 +77,25 @@
   letter-spacing: -0.02em;
   margin-bottom: 6px;
 }
-
+ 
 .logoIcon {
   color: var(--amber);
 }
-
+ 
 .subtitle {
   text-align: center;
   color: var(--ink-muted);
   font-size: 0.88rem;
   margin-bottom: 28px;
 }
-
+ 
 .tabs {
   display: flex;
   gap: 4px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--line);
 }
-
+ 
 .tab {
   flex: 1;
   background: none;
@@ -108,51 +108,51 @@
   border-bottom: 2px solid transparent;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
-
+ 
 .tabActive {
   color: var(--ink);
   border-bottom-color: var(--amber);
 }
-
+ 
 .form {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-
+ 
 .form :global(.ant-input),
 .form :global(.ant-input-affix-wrapper) {
   background: var(--bg-void) !important;
   border: 1px solid var(--line) !important;
   color: var(--ink) !important;
 }
-
+ 
 .form :global(.ant-input)::placeholder {
   color: var(--ink-faint);
 }
-
+ 
 .form :global(.ant-input-affix-wrapper:focus),
 .form :global(.ant-input-affix-wrapper-focused),
 .form :global(.ant-input:focus) {
   border-color: var(--amber) !important;
   box-shadow: 0 0 0 3px rgba(232, 150, 60, 0.15) !important;
 }
-
+ 
 .form :global(.ant-input-password-icon) {
   color: var(--ink-muted);
 }
-
+ 
 .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
+ 
 .label {
   font-size: 0.78rem;
   color: var(--ink-muted);
 }
-
+ 
 .submitBtn {
   margin-top: 6px;
   background: var(--amber);
@@ -166,16 +166,16 @@
   cursor: pointer;
   transition: background 0.15s ease;
 }
-
+ 
 .submitBtn:hover {
   background: var(--amber-soft);
 }
-
+ 
 .submitBtn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
+ 
 .divider {
   display: flex;
   align-items: center;
@@ -184,7 +184,7 @@
   color: var(--ink-faint);
   font-size: 0.75rem;
 }
-
+ 
 .divider::before,
 .divider::after {
   content: '';
@@ -192,7 +192,7 @@
   height: 1px;
   background: var(--line);
 }
-
+ 
 .googleBtn {
   width: 100%;
   display: flex;
@@ -209,24 +209,29 @@
   cursor: pointer;
   transition: border-color 0.15s ease;
 }
-
+ 
 .googleBtn:hover {
   border-color: var(--ink-faint);
 }
-
+ 
+.googleBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+ 
 .errorText {
   color: var(--red);
   font-size: 0.8rem;
   margin-top: -4px;
 }
-
+ 
 .footNote {
   margin-top: 22px;
   text-align: center;
   font-size: 0.8rem;
   color: var(--ink-faint);
 }
-
+ 
 .footNote button {
   background: none;
   border: none;

@@ -80,6 +80,30 @@ export async function searchAlbums(term, { limit = 12 } = {}) {
 }
 
 /**
+ * Busca por MÚSICA (não álbum) — devolve a faixa junto com o álbum a que
+ * ela pertence, já que não temos uma página própria por faixa; clicar
+ * num resultado leva pro álbum inteiro.
+ */
+export async function searchTracks(term, { limit = 12 } = {}) {
+  const { data } = await axios.get('/api/search-albums', {
+    params: { term, limit, entity: 'song' },
+  });
+
+  return (data?.results ?? [])
+    .filter((item) => item.wrapperType === 'track' && item.collectionId)
+    .map((item) => ({
+      trackId: item.trackId,
+      trackTitle: item.trackName,
+      trackNumber: item.trackNumber || null,
+      albumId: item.collectionId,
+      albumTitle: item.collectionName,
+      artist: item.artistName,
+      artwork: upscaleArtwork(item.artworkUrl100),
+      previewUrl: item.previewUrl || null,
+    }));
+}
+
+/**
  * Busca artistas por nome.
  */
 export async function searchArtists(term, { limit = 16 } = {}) {

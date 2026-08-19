@@ -17,6 +17,7 @@ import { listListenlist, removeFromListenlist } from '../lib/listenlist';
 import { listUserLists, createList } from '../lib/lists';
 import { useAuth } from '../context/AuthContext';
 import StarRating from '../components/StarRating';
+import AvatarFrame from '../components/AvatarFrame';
 import FollowListModal from '../components/FollowListModal';
 import styles from './page.module.css';
 
@@ -47,6 +48,7 @@ export default function ProfilePage() {
     followersCount: 0,
     followingCount: 0,
     ratingsCount: 0,
+    avatarFrame: 'none',
   });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editingBio, setEditingBio] = useState(false);
@@ -86,6 +88,7 @@ export default function ProfilePage() {
           setProfile({
             bio: data.bio || '',
             photoURL: data.photoURL || user.photoURL || '',
+            avatarFrame: data.avatarFrame || 'none',
             bannerURL: data.bannerURL || '',
             followersCount: data.followersCount || 0,
             followingCount: data.followingCount || 0,
@@ -269,6 +272,7 @@ export default function ProfilePage() {
         </div>
 
         <div className={styles.avatarFloat}>
+          <AvatarFrame frame={profile.avatarFrame}>
           <div className={styles.avatarWrap}>
             <div className={styles.avatar}>
               {profile.photoURL ? (
@@ -293,6 +297,7 @@ export default function ProfilePage() {
               onChange={handleAvatarChange}
             />
           </div>
+          </AvatarFrame>
         </div>
       </div>
 

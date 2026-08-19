@@ -16,13 +16,13 @@
   --amber-soft: var(--accent-soft);
   --teal: var(--moss);
 
-  min-height: 100vh;
+   min-height: 100vh;
   background: var(--bg-void);
   color: var(--ink);
   font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
   padding-bottom: 60px;
 }
-
+ 
 .backLink {
   display: inline-flex;
   align-items: center;
@@ -32,11 +32,11 @@
   text-decoration: none;
   font-size: 0.85rem;
 }
-
+ 
 .backLink:hover {
   color: var(--ink);
 }
-
+ 
 .loadingPage {
   min-height: 100vh;
   display: flex;
@@ -45,9 +45,9 @@
   background: var(--bg-void);
   color: var(--ink-muted);
 }
-
+ 
 /* ---------- Header ---------- */
-
+ 
 .header {
   max-width: 880px;
   margin: 24px auto 0;
@@ -55,7 +55,7 @@
   display: flex;
   gap: 32px;
 }
-
+ 
 .cover {
   width: 220px;
   height: 220px;
@@ -65,14 +65,14 @@
   background: var(--bg-surface-raised);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
-
+ 
 .headerInfo {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding-bottom: 4px;
 }
-
+ 
 .eyebrow {
   font-size: 0.72rem;
   letter-spacing: 0.1em;
@@ -81,21 +81,35 @@
   font-weight: 700;
   margin-bottom: 8px;
 }
-
+ 
 .title {
   font-weight: 800;
   font-size: 2rem;
   letter-spacing: -0.02em;
   line-height: 1.1;
 }
-
+ 
 .artist {
   font-size: 1.05rem;
   color: var(--ink-muted);
   margin-top: 6px;
   font-weight: 500;
 }
-
+ 
+.artistLink {
+  display: inline-block;
+  font-size: 1.05rem;
+  color: var(--ink-muted);
+  margin-top: 6px;
+  font-weight: 500;
+  text-decoration: none;
+}
+ 
+.artistLink:hover {
+  color: var(--amber-soft);
+  text-decoration: underline;
+}
+ 
 .metaRow {
   display: flex;
   gap: 14px;
@@ -104,15 +118,27 @@
   color: var(--ink-faint);
   flex-wrap: wrap;
 }
-
+ 
 .metaRow span:not(:last-child)::after {
   content: '·';
   margin-left: 14px;
   color: var(--line);
 }
-
+ 
 /* ---------- Bloco de avaliação ---------- */
-
+ 
+.communityRating {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+ 
+.communityRatingText {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+ 
 .ratingBlock {
   margin-top: 24px;
   display: flex;
@@ -120,32 +146,32 @@
   gap: 14px;
   flex-wrap: wrap;
 }
-
+ 
 .ratingLabel {
   font-size: 0.8rem;
   color: var(--ink-muted);
 }
-
+ 
 .ratingValue {
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--amber-soft);
 }
-
+ 
 .loginPrompt {
   font-size: 0.82rem;
   color: var(--ink-faint);
 }
-
+ 
 .loginPrompt a {
   color: var(--amber-soft);
   text-decoration: none;
 }
-
+ 
 .loginPrompt a:hover {
   text-decoration: underline;
 }
-
+ 
 .removeRatingBtn {
   display: flex;
   align-items: center;
@@ -156,11 +182,11 @@
   font-size: 0.76rem;
   cursor: pointer;
 }
-
+ 
 .removeRatingBtn:hover {
   color: #d64545;
 }
-
+ 
 .actionsRow {
   display: flex;
   gap: 10px;
@@ -168,7 +194,7 @@
   flex-wrap: wrap;
   position: relative;
 }
-
+ 
 .actionBtn {
   display: flex;
   align-items: center;
@@ -183,22 +209,22 @@
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease;
 }
-
+ 
 .actionBtn:hover {
   border-color: var(--amber);
   color: var(--ink);
 }
-
+ 
 .actionBtnActive {
   background: var(--amber);
   border-color: var(--amber);
   color: #1a1310;
 }
-
+ 
 .listsWrap {
   position: relative;
 }
-
+ 
 .listsPanel {
   position: absolute;
   top: calc(100% + 8px);
@@ -211,7 +237,7 @@
   z-index: 10;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
 }
-
+ 
 .listsLoading,
 .listsEmpty {
   display: flex;
@@ -221,7 +247,7 @@
   font-size: 0.8rem;
   padding: 8px 4px;
 }
-
+ 
 .listOption {
   display: flex;
   align-items: center;
@@ -236,11 +262,11 @@
   border-radius: 6px;
   cursor: pointer;
 }
-
+ 
 .listOption:hover {
   background: var(--bg-surface-raised);
 }
-
+ 
 .listCheck {
   width: 16px;
   height: 16px;
@@ -252,12 +278,12 @@
   flex-shrink: 0;
   color: #1a1310;
 }
-
+ 
 .listCheckOn {
   background: var(--amber);
   border-color: var(--amber);
 }
-
+ 
 .newListRow {
   display: flex;
   gap: 6px;
@@ -265,7 +291,7 @@
   padding-top: 8px;
   border-top: 1px solid var(--line);
 }
-
+ 
 .newListInput {
   flex: 1;
   background: var(--bg-void);
@@ -275,11 +301,11 @@
   font-size: 0.8rem;
   color: var(--ink);
 }
-
+ 
 .newListInput::placeholder {
   color: var(--ink-faint);
 }
-
+ 
 .newListBtn {
   background: var(--amber);
   border: none;
@@ -291,19 +317,19 @@
   color: #1a1310;
   cursor: pointer;
 }
-
+ 
 .reviewBlock {
   margin-top: 20px;
   max-width: 480px;
 }
-
+ 
 .reviewLabel {
   font-size: 0.76rem;
   color: var(--ink-muted);
   margin-bottom: 6px;
   display: block;
 }
-
+ 
 .saveReviewBtn {
   margin-top: 8px;
   background: var(--bg-surface);
@@ -315,24 +341,24 @@
   font-weight: 600;
   cursor: pointer;
 }
-
+ 
 .saveReviewBtn:hover {
   border-color: var(--amber);
 }
-
+ 
 .saveReviewBtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
+ 
 /* ---------- Faixas ---------- */
-
+ 
 .section {
   max-width: 880px;
   margin: 40px auto 0;
   padding: 0 32px;
 }
-
+ 
 .sectionTitle {
   font-weight: 700;
   font-size: 1.1rem;
@@ -340,12 +366,12 @@
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
 }
-
+ 
 .trackList {
   display: flex;
   flex-direction: column;
 }
-
+ 
 .trackRow {
   display: flex;
   flex-direction: column;
@@ -353,21 +379,21 @@
   padding: 12px 4px;
   border-bottom: 1px solid var(--line);
 }
-
+ 
 .trackMain {
   display: grid;
   grid-template-columns: 28px 1fr 46px auto;
   align-items: center;
   gap: 12px;
 }
-
+ 
 .trackRatingRow {
   display: flex;
   align-items: center;
   gap: 8px;
   padding-left: 40px; /* alinha com o título, não com o número da faixa */
 }
-
+ 
 .trackRatingClear {
   background: none;
   border: none;
@@ -375,48 +401,48 @@
   cursor: pointer;
   padding: 2px;
 }
-
+ 
 .trackRatingClear:hover {
   color: #d64545;
 }
-
+ 
 .trackNumber {
   font-size: 0.78rem;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
-
+ 
 .trackTitle {
   font-size: 0.92rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
+ 
 .trackDuration {
   font-size: 0.75rem;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
 }
-
+ 
 .trackAudio {
   height: 32px;
   width: 200px;
 }
-
+ 
 .trackNoPreview {
   font-size: 0.72rem;
   color: var(--ink-faint);
   width: 200px;
   text-align: right;
 }
-
+ 
 .hint {
   margin-top: 16px;
   font-size: 0.72rem;
   color: var(--ink-faint);
 }
-
+ 
 @media (max-width: 620px) {
   .header {
     flex-direction: column;
@@ -424,21 +450,21 @@
     text-align: center;
     padding: 0 20px;
   }
-
+ 
   .cover {
     width: 170px;
     height: 170px;
   }
-
+ 
   .metaRow,
   .ratingBlock {
     justify-content: center;
   }
-
+ 
   .trackMain {
     grid-template-columns: 22px 1fr 40px;
   }
-
+ 
   .trackAudio,
   .trackNoPreview {
     grid-column: 1 / -1;
@@ -446,7 +472,7 @@
     justify-self: start;
     margin-top: 4px;
   }
-
+ 
   .trackRatingRow {
     padding-left: 30px;
   }

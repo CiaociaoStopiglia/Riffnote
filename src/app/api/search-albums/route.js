@@ -5,6 +5,8 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const term = searchParams.get('term');
   const limit = searchParams.get('limit') || '12';
+  // 'album' (padrão) ou 'song' — permite buscar por música também.
+  const entity = searchParams.get('entity') === 'song' ? 'song' : 'album';
 
   if (!term) {
     return NextResponse.json({ error: 'Parâmetro "term" é obrigatório.' }, { status: 400 });
@@ -12,7 +14,7 @@ export async function GET(request) {
 
   const itunesUrl = new URL('https://itunes.apple.com/search');
   itunesUrl.searchParams.set('term', term);
-  itunesUrl.searchParams.set('entity', 'album');
+  itunesUrl.searchParams.set('entity', entity);
   itunesUrl.searchParams.set('limit', limit);
 
   try {

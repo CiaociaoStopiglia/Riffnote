@@ -6,6 +6,10 @@ import { Input, Spin } from 'antd';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
+import { motion, AnimatePresence } from 'motion/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { SplitText } from 'gsap/SplitText';
 import {
   Search,
   X,
@@ -13,8 +17,18 @@ import {
   Settings,
 } from 'lucide-react';
 import styles from './page.module.css';
-import { fetchTopAlbums, searchAlbums, extractTopArtists, fillMissingArtwork } from './lib/musicApi';
+import { fetchTopAlbums, searchAlbums, searchTracks, extractTopArtists, fillMissingArtwork } from './lib/musicApi';
 import { useAuth } from './context/AuthContext';
+import TrackResultRow from './components/TrackResultRow';
+import AvatarFrame from './components/AvatarFrame';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './lib/firebase';
+
+// ScrollTrigger e SplitText tocam no DOM, então só registram no navegador
+// (nunca no build/SSR).
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+}
 
 // Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
 const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
@@ -70,7 +84,12 @@ function RatingDots({ value, max = 5 }) {
 function AlbumCard({ album }) {
   return (
     <Link href={`/album/${album.id}`} className={styles.albumCard}>
-      <div className={styles.albumSleeve}>
+      <motion.div
+        className={styles.albumSleeve}
+        whileHover={{ y: -6 }}
+        whileTap={{ scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+      >
         <div className={styles.albumDisc} />
         <div className={styles.albumCover}>
           {album.artwork ? (
@@ -79,7 +98,7 @@ function AlbumCard({ album }) {
             <div className={styles.albumCoverFallback}>{album.title}</div>
           )}
         </div>
-      </div>
+      </motion.div>
       <div className={styles.albumInfo}>
         <div className={styles.albumTitle}>{album.title}</div>
         <div className={styles.albumArtist}>{album.artist}</div>
@@ -92,6 +111,21 @@ function AlbumCard({ album }) {
 export default function Home() {
   const { user, logOut } = useAuth();
   const pageRef = useRef(null);
+  const titleRef = useRef(null);
+  const drawingRef = useRef(null);
+  const statementRef = useRef(null);
+
+  const [avatarFrame, setAvatarFrame] = useState('none');
+
+  useEffect(() => {
+    if (!user) {
+      setAvatarFrame('none');
+      return;
+    }
+    getDoc(doc(db, 'users', user.uid))
+      .then((snap) => setAvatarFrame(snap.exists() ? snap.data().avatarFrame || 'none' : 'none'))
+      .catch(() => {});
+  }, [user]);
 
   const [query, setQuery] = useState('');
   const [trendingAlbums, setTrendingAlbums] = useState([]);
@@ -99,6 +133,7 @@ export default function Home() {
   const [loadingTrending, setLoadingTrending] = useState(true);
 
   const [searchResults, setSearchResults] = useState(null);
+  const [trackResults, setTrackResults] = useState([]);
   const [searching, setSearching] = useState(false);
 
   useEffect(() => {
@@ -131,17 +166,21 @@ export default function Home() {
   const handleSearch = async () => {
     const term = query.trim();
     if (!term) {
-      toast.error('Digite o nome de um álbum ou artista.');
+      toast.error('Digite o nome de um álbum, artista ou música.');
       return;
     }
 
     setSearching(true);
     try {
-      const results = await searchAlbums(term, { limit: 12 });
-      if (results.length === 0) {
+      const [albums, tracks] = await Promise.all([
+        searchAlbums(term, { limit: 12 }),
+        searchTracks(term, { limit: 6 }),
+      ]);
+      if (albums.length === 0 && tracks.length === 0) {
         toast(`Nada encontrado para "${term}".`);
       }
-      setSearchResults(results);
+      setSearchResults(albums);
+      setTrackResults(tracks);
     } catch (err) {
       toast.error('Não consegui completar a busca. Tenta de novo.');
     } finally {
@@ -151,6 +190,7 @@ export default function Home() {
 
   const clearSearch = () => {
     setSearchResults(null);
+    setTrackResults([]);
     setQuery('');
   };
 
@@ -172,6 +212,122 @@ export default function Home() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // GSAP + SplitText: entrada do hero letra por letra, títulos de seção que
+  // se revelam palavra por palavra ACOMPANHANDO o scroll (scrub — não é só
+  // "aparece uma vez", o progresso da animação é o próprio progresso do
+  // scroll), e um desenho de linha original que se traça sozinho.
+  useEffect(() => {
+    let titleSplit;
+    const sectionSplits = [];
+    let statementSplit;
+
+    const ctx = gsap.context(() => {
+      // --- Entrada do hero ---
+      if (titleRef.current) {
+        titleSplit = SplitText.create(titleRef.current, { type: 'chars' });
+      }
+
+      const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      heroTl.from('[data-reveal="sleeve"]', { opacity: 0, scale: 0.94, duration: 0.7 }, 0);
+      heroTl.from('[data-reveal="eyebrow"]', { opacity: 0, y: 14, duration: 0.5 }, 0.1);
+      if (titleSplit) {
+        heroTl.from(
+          titleSplit.chars,
+          {
+            opacity: 0,
+            y: 36,
+            rotateX: -70,
+            filter: 'blur(6px)',
+            transformPerspective: 500,
+            duration: 0.65,
+            stagger: 0.014,
+          },
+          '-=0.3'
+        );
+      }
+      heroTl.from('[data-reveal="sub"]', { opacity: 0, y: 14, duration: 0.5 }, '-=0.4');
+      heroTl.from('[data-reveal="search"]', { opacity: 0, y: 14, duration: 0.5 }, '-=0.3');
+      heroTl.from('[data-reveal="track"]', { opacity: 0, y: 10, duration: 0.4, stagger: 0.08 }, '-=0.25');
+
+      // --- Conteúdo de cada seção (fade + leve subida ao entrar na tela) ---
+      gsap.utils.toArray('[data-reveal-section]').forEach((el) => {
+        gsap.from(el, {
+          opacity: 0,
+          y: 28,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        });
+      });
+
+      // --- Títulos de seção: palavra por palavra, PRESA ao scroll (scrub) ---
+      gsap.utils.toArray('[data-split-title]').forEach((el) => {
+        const split = SplitText.create(el, { type: 'words' });
+        sectionSplits.push(split);
+        gsap.from(split.words, {
+          opacity: 0,
+          y: 30,
+          ease: 'none',
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 92%',
+            end: 'top 55%',
+            scrub: 0.6,
+          },
+        });
+      });
+
+      // --- Desenho de linha do toca-discos: traça sozinho conforme rola ---
+      if (drawingRef.current) {
+        const drawEls = drawingRef.current.querySelectorAll('path, circle');
+        drawEls.forEach((el) => {
+          const length = el.getTotalLength();
+          gsap.set(el, { strokeDasharray: length, strokeDashoffset: length });
+        });
+        gsap.to(drawEls, {
+          strokeDashoffset: 0,
+          ease: 'none',
+          stagger: 0.18,
+          scrollTrigger: {
+            trigger: drawingRef.current,
+            start: 'top 85%',
+            end: 'bottom 35%',
+            scrub: 1,
+          },
+        });
+      }
+
+      // --- Frase grande: acende palavra por palavra conforme você lê/rola ---
+      if (statementRef.current) {
+        statementSplit = SplitText.create(statementRef.current, { type: 'words' });
+        gsap.from(statementSplit.words, {
+          opacity: 0.1,
+          filter: 'blur(3px)',
+          ease: 'none',
+          stagger: 0.4,
+          scrollTrigger: {
+            trigger: statementRef.current,
+            start: 'top 78%',
+            end: 'bottom 30%',
+            scrub: 0.7,
+          },
+        });
+      }
+    }, pageRef);
+
+    return () => {
+      ctx.revert();
+      titleSplit?.revert();
+      sectionSplits.forEach((s) => s.revert());
+      statementSplit?.revert();
+    };
+  }, [showingSearch]);
+
   return (
     <div className={styles.page} ref={pageRef}>
       {/* Navbar */}
@@ -189,6 +345,7 @@ export default function Home() {
           {user ? (
             <>
               <Link href="/profile" className={styles.navAvatarLink}>
+                <AvatarFrame frame={avatarFrame}>
                 {user.photoURL ? (
                   <img src={user.photoURL} alt={user.displayName || 'Perfil'} className={styles.navAvatar} />
                 ) : (
@@ -196,6 +353,7 @@ export default function Home() {
                     {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
                   </span>
                 )}
+                </AvatarFrame>
               </Link>
               <Link href="/configuracoes" className={styles.ghostBtn} title="Configurações">
                 <Settings size={16} />
@@ -226,25 +384,25 @@ export default function Home() {
 
       {/* Hero — capa de disco + liner notes */}
       <section className={styles.hero}>
-        <div className={styles.sleeve}>
+        <div className={styles.sleeve} data-reveal="sleeve">
           <VinylScene />
           <span className={styles.sleeveCatalog}>RN · 001 · SIDE A</span>
         </div>
 
         <div className={styles.linerNotes}>
-          <span className={styles.eyebrow}>modelo RN-001 — diário de escuta pessoal</span>
-          <h1 className={styles.heroTitle}>
+          <span className={styles.eyebrow} data-reveal="eyebrow">modelo RN-001 — diário de escuta pessoal</span>
+          <h1 className={styles.heroTitle} ref={titleRef}>
             Toda música <em>guardada</em>. Toda nota <em>registrada</em>.
           </h1>
-          <p className={styles.heroSub}>
+          <p className={styles.heroSub} data-reveal="sub">
             Riffnote é onde você anota o que ouviu — como um diário de cinema,
             só que pra o que toca no seu fone.
           </p>
 
-          <div className={styles.searchWrap}>
+          <div className={styles.searchWrap} data-reveal="search">
             <Input
               size="large"
-              placeholder="Busque um álbum ou artista…"
+              placeholder="Busque um álbum, artista ou música…"
               prefix={<Search size={17} color="#5c564a" />}
               suffix={searching ? <Spin size="small" /> : null}
               value={query}
@@ -255,7 +413,7 @@ export default function Home() {
 
           <div className={styles.heroTracklist}>
             {HERO_STEPS.map((step) => (
-              <div key={step.num} className={styles.heroTrack}>
+              <div key={step.num} className={styles.heroTrack} data-reveal="track">
                 <span className={styles.heroTrackNum}>{step.num}</span>
                 <span className={styles.heroTrackLabel}>{step.label}</span>
                 <span className={styles.heroTrackDesc}>{step.desc}</span>
@@ -266,11 +424,11 @@ export default function Home() {
       </section>
 
       {/* Em alta / Resultados de busca */}
-      <section className={styles.section}>
+      <section className={styles.section} data-reveal-section>
         <div className={styles.sectionHead}>
           <div>
             <span className={styles.sectionEyebrow}>{showingSearch ? 'busca' : 'chart Apple Music'}</span>
-            <h2 className={styles.sectionTitle}>
+            <h2 className={styles.sectionTitle} data-split-title>
               {showingSearch ? `"${query}"` : 'Em alta essa semana'}
             </h2>
           </div>
@@ -286,21 +444,41 @@ export default function Home() {
             <Spin /> <span>carregando o chart…</span>
           </div>
         ) : (
-          <div className={styles.albumGrid}>
-            {(showingSearch ? searchResults : trendingAlbums).map((album) => (
-              <AlbumCard key={album.id} album={album} />
-            ))}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={showingSearch ? `search-${query}` : 'trending'}
+              className={styles.albumGrid}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            >
+              {(showingSearch ? searchResults : trendingAlbums).map((album) => (
+                <AlbumCard key={album.id} album={album} />
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        )}
+
+        {showingSearch && trackResults.length > 0 && (
+          <div className={styles.trackResultsBlock}>
+            <span className={styles.trackResultsLabel}>Músicas</span>
+            <div className={styles.trackResultsList}>
+              {trackResults.map((track) => (
+                <TrackResultRow key={track.trackId} track={track} />
+              ))}
+            </div>
           </div>
         )}
       </section>
 
       {/* Artistas */}
       {!showingSearch && (
-        <section className={styles.section}>
+        <section className={styles.section} data-reveal-section>
           <div className={styles.sectionHead}>
             <div>
               <span className={styles.sectionEyebrow}>a partir do chart</span>
-              <h2 className={styles.sectionTitle}>Artistas em destaque</h2>
+              <h2 className={styles.sectionTitle} data-split-title>Artistas em destaque</h2>
             </div>
             <Link href="/artistas" className={styles.sectionLink}>
               ver todos
@@ -309,11 +487,15 @@ export default function Home() {
           <div className={styles.artistRow}>
             {topArtists.map((artist) => (
               <Link href={`/artista/${artist.artistId}`} key={artist.name} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className={styles.artistAvatarRing}>
+                <motion.div
+                  className={styles.artistAvatarRing}
+                  whileHover={{ scale: 1.08 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+                >
                   <div className={styles.artistAvatar}>
                     {artist.artwork ? <img src={artist.artwork} alt={artist.name} /> : artist.name.charAt(0)}
                   </div>
-                </div>
+                </motion.div>
                 <div className={styles.artistName}>{artist.name}</div>
               </Link>
             ))}
@@ -321,13 +503,20 @@ export default function Home() {
         </section>
       )}
 
+      {/* Frase grande — acende palavra por palavra conforme você rola */}
+      <div className={styles.statementWrap}>
+        <p className={styles.statement} ref={statementRef}>
+          Não é só ouvir. É lembrar o que ouviu, quando ouviu, e o que sentiu na hora.
+        </p>
+      </div>
+
       {/* Atividade recente */}
       {!showingSearch && (
-        <section className={styles.section}>
+        <section className={styles.section} data-reveal-section>
           <div className={styles.sectionHead}>
             <div>
               <span className={styles.sectionEyebrow}>ao vivo</span>
-              <h2 className={styles.sectionTitle}>Atividade recente</h2>
+              <h2 className={styles.sectionTitle} data-split-title>Atividade recente</h2>
             </div>
           </div>
           <div className={styles.activityFeed}>
@@ -350,6 +539,29 @@ export default function Home() {
             ))}
           </div>
         </section>
+      )}
+
+      {/* Desenho de linha original — se traça sozinho conforme você rola.
+          Fica por último de propósito: é um fechamento visual, não deve
+          disputar atenção com busca/resultados. */}
+      {!showingSearch && (
+        <div className={styles.drawingSection}>
+          <span className={styles.drawingLabel}>traçado à mão, sem clichê de IA</span>
+          <svg
+            ref={drawingRef}
+            viewBox="0 0 400 220"
+            className={styles.drawingSvg}
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle cx="130" cy="110" r="95" className={styles.drawStroke} />
+            <circle cx="130" cy="110" r="30" className={styles.drawStroke} />
+            <circle cx="130" cy="110" r="4" className={styles.drawStroke} />
+            <path d="M 320 40 L 165 100" className={styles.drawStrokeAccent} />
+            <circle cx="320" cy="40" r="12" className={styles.drawStrokeAccent} />
+            <path d="M 60 160 A 85 85 0 0 1 50 108" className={styles.drawStroke} />
+          </svg>
+        </div>
       )}
 
       <footer className={styles.footer}>
