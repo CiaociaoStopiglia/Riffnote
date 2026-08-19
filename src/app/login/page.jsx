@@ -1,10 +1,10 @@
 // src/app/login/page.jsx
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Input } from 'antd';
+import { Input, Spin } from 'antd';
 import toast from 'react-hot-toast';
 import { Disc3, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -24,7 +24,10 @@ function translateAuthError(code) {
   return map[code] || 'Algo deu errado. Tenta de novo.';
 }
 
-export default function LoginPage() {
+// O Next.js exige que useSearchParams() fique dentro de um <Suspense>
+// quando a página pode ser prerenderizada no build — por isso a página
+// de verdade agora é um componente separado, envolvido lá embaixo.
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn, signUp, signInWithGoogle } = useAuth();
@@ -181,5 +184,23 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+// Fallback simples enquanto o Next resolve os parâmetros da URL — some
+// quase instantaneamente, é só pra satisfazer a exigência do build.
+function LoginFallback() {
+  return (
+    <div className={styles.page}>
+      <Spin size="large" />
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
