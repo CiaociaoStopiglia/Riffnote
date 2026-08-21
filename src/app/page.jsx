@@ -33,22 +33,21 @@ if (typeof window !== 'undefined') {
 // Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
 const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
 
-// Atividade "social" — troque o link do avatar de cada amigo quando tiver.
+// Atividade "social" ainda é mock — isso viria do seu próprio backend
+// (avaliações e resenhas de usuários), não de uma API de catálogo de música.
 const RECENT_ACTIVITY = [
   {
     id: 1,
-    user: 'Ferreirag4',
-    avatar: 'https://a.ltrbxd.com/resized/avatar/upload/4/5/4/9/3/3/2/shard/avtr-0-220-0-220-crop.jpg?v=de3da1ddee', // cole aqui o link da foto dele
+    user: 'marina.ouve',
     action: 'avaliou',
-    album: 'Queen II',
+    album: 'In Rainbows',
     hue: '#c9432b',
     time: '2 min',
-    text: 'Cada faixa é um encaixe perfeito. "Father to Son" me pega toda vez.',
+    text: 'Cada faixa é um encaixe perfeito. "Weird Fishes" me pega toda vez.',
   },
   {
     id: 2,
-    user: 'Supremeduck3',
-    avatar: 'https://avatars.githubusercontent.com/u/195989606?v=4', // cole aqui o link da foto dele
+    user: 'pedrovinil',
     action: 'resenhou',
     album: 'Currents',
     hue: '#8a9a5b',
@@ -57,13 +56,12 @@ const RECENT_ACTIVITY = [
   },
   {
     id: 3,
-    user: 'lillys',
-    avatar: 'https://res.cloudinary.com/bmndos6m/image/upload/v1787101901/riffnote/avatars/QBClO5JlsEe8LWZIsbcmghbgK2x2/icb8awjdmdtfv0l5ocvo.jpg', // cole aqui o link da foto dela
+    user: 'lu.faixas',
     action: 'adicionou à lista',
-    album: 'Collide with the Sky',
+    album: 'To Pimp a Butterfly',
     hue: '#5c564a',
     time: '41 min',
-    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve Emo".',
+    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve rap".',
   },
 ];
 
@@ -199,10 +197,12 @@ export default function Home() {
   const showingSearch = searchResults !== null;
 
   // Move o fundo bem sutilmente seguindo o mouse pela tela inteira.
+  // Escuta direto na window (em vez de onMouseMove no div) pra não
+  // depender do evento borbulhar através do Canvas do Three.js.
   useEffect(() => {
     function handleMouseMove(e) {
       if (!pageRef.current) return;
-      const x = (e.clientX / window.innerWidth - 0.5) * 2;
+      const x = (e.clientX / window.innerWidth - 0.5) * 2; // -1 a 1
       const y = (e.clientY / window.innerHeight - 0.5) * 2;
       pageRef.current.style.setProperty('--mx', x.toFixed(3));
       pageRef.current.style.setProperty('--my', y.toFixed(3));
@@ -212,12 +212,17 @@ export default function Home() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // GSAP + SplitText: entrada do hero letra por letra, títulos de seção que
+  // se revelam palavra por palavra ACOMPANHANDO o scroll (scrub — não é só
+  // "aparece uma vez", o progresso da animação é o próprio progresso do
+  // scroll), e um desenho de linha original que se traça sozinho.
   useEffect(() => {
     let titleSplit;
     const sectionSplits = [];
     let statementSplit;
 
     const ctx = gsap.context(() => {
+      // --- Entrada do hero ---
       if (titleRef.current) {
         titleSplit = SplitText.create(titleRef.current, { type: 'chars' });
       }
@@ -244,6 +249,7 @@ export default function Home() {
       heroTl.from('[data-reveal="search"]', { opacity: 0, y: 14, duration: 0.5 }, '-=0.3');
       heroTl.from('[data-reveal="track"]', { opacity: 0, y: 10, duration: 0.4, stagger: 0.08 }, '-=0.25');
 
+      // --- Conteúdo de cada seção (fade + leve subida ao entrar na tela) ---
       gsap.utils.toArray('[data-reveal-section]').forEach((el) => {
         gsap.from(el, {
           opacity: 0,
@@ -258,6 +264,7 @@ export default function Home() {
         });
       });
 
+      // --- Títulos de seção: palavra por palavra, PRESA ao scroll (scrub) ---
       gsap.utils.toArray('[data-split-title]').forEach((el) => {
         const split = SplitText.create(el, { type: 'words' });
         sectionSplits.push(split);
@@ -275,6 +282,7 @@ export default function Home() {
         });
       });
 
+      // --- Desenho de linha do toca-discos: traça sozinho conforme rola ---
       if (drawingRef.current) {
         const drawEls = drawingRef.current.querySelectorAll('path, circle');
         drawEls.forEach((el) => {
@@ -294,6 +302,7 @@ export default function Home() {
         });
       }
 
+      // --- Frase grande: acende palavra por palavra conforme você lê/rola ---
       if (statementRef.current) {
         statementSplit = SplitText.create(statementRef.current, { type: 'words' });
         gsap.from(statementSplit.words, {
@@ -321,6 +330,7 @@ export default function Home() {
 
   return (
     <div className={styles.page} ref={pageRef}>
+      {/* Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>
           <img src="/logo.png" alt="Riffnote" className={styles.logoIcon} />
@@ -330,6 +340,7 @@ export default function Home() {
           <Link href="/albuns">Álbuns</Link>
           <Link href="/artistas">Artistas</Link>
           <Link href="/usuarios">Pessoas</Link>
+          <Link href="/comunidade">Comunidade</Link>
         </nav>
         <div className={styles.navActions}>
           {user ? (
@@ -372,6 +383,7 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Hero — capa de disco + liner notes */}
       <section className={styles.hero}>
         <div className={styles.sleeve} data-reveal="sleeve">
           <VinylScene />
@@ -412,6 +424,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Em alta / Resultados de busca */}
       <section className={styles.section} data-reveal-section>
         <div className={styles.sectionHead}>
           <div>
@@ -460,6 +473,7 @@ export default function Home() {
         )}
       </section>
 
+      {/* Artistas */}
       {!showingSearch && (
         <section className={styles.section} data-reveal-section>
           <div className={styles.sectionHead}>
@@ -490,12 +504,14 @@ export default function Home() {
         </section>
       )}
 
+      {/* Frase grande — acende palavra por palavra conforme você rola */}
       <div className={styles.statementWrap}>
         <p className={styles.statement} ref={statementRef}>
           Não é só ouvir. É lembrar o que ouviu, quando ouviu, e o que sentiu na hora.
         </p>
       </div>
 
+      {/* Atividade recente */}
       {!showingSearch && (
         <section className={styles.section} data-reveal-section>
           <div className={styles.sectionHead}>
@@ -509,11 +525,7 @@ export default function Home() {
               <div key={item.id} className={styles.reviewCard}>
                 <div
                   className={styles.reviewCover}
-                  style={
-                    item.avatar
-                      ? { backgroundImage: `url(${item.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                      : { background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }
-                  }
+                  style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
                 />
                 <div className={styles.reviewBody}>
                   <div className={styles.reviewHeader}>
@@ -530,6 +542,9 @@ export default function Home() {
         </section>
       )}
 
+      {/* Desenho de linha original — se traça sozinho conforme você rola.
+          Fica por último de propósito: é um fechamento visual, não deve
+          disputar atenção com busca/resultados. */}
       {!showingSearch && (
         <div className={styles.drawingSection}>
           <span className={styles.drawingLabel}>traçado à mão, sem clichê de IA</span>

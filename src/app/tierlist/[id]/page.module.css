@@ -1,0 +1,325 @@
+/* src/app/tierlist/[id]/page.module.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.page {
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
+  --amber: var(--accent);
+  --amber-soft: var(--accent-soft);
+  --teal: var(--moss);
+  --red: #d64545;
+
+  min-height: 100vh;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0 32px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  color: var(--ink-muted);
+}
+
+.header {
+  max-width: 1000px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 1.7rem;
+  letter-spacing: -0.02em;
+}
+
+.owner {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--bg-surface);
+  color: var(--ink);
+}
+
+.actionBtn:hover {
+  border-color: var(--amber);
+}
+
+.actionBtnPrimary {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #1a1310;
+}
+
+.actionBtnPrimary:hover {
+  opacity: 0.9;
+}
+
+.actionBtnDanger:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.hint {
+  max-width: 1000px;
+  margin: 10px auto 0;
+  padding: 0 32px;
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+/* ---------- Busca (só pro dono) ---------- */
+
+.searchSection {
+  max-width: 1000px;
+  margin: 24px auto 0;
+  padding: 0 32px;
+}
+
+.searchWrap {
+  display: flex;
+  gap: 10px;
+  max-width: 460px;
+}
+
+.searchWrap :global(.ant-input) {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.searchBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 16px;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.searchResults {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.searchResultItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px 6px 6px;
+  cursor: pointer;
+}
+
+.searchResultItem:hover {
+  border-color: var(--amber);
+}
+
+.searchResultItem img {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.searchResultText {
+  font-size: 0.78rem;
+}
+
+/* ---------- Board (tiers + pool) ---------- */
+
+.board {
+  max-width: 1000px;
+  margin: 28px auto 0;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tierRow {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  min-height: 90px;
+  background: var(--bg-surface);
+  transition: background 0.15s ease;
+}
+
+.tierRowOver {
+  background: var(--bg-surface-raised);
+}
+
+.tierLabel {
+  width: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.3rem;
+  color: #1a1310;
+}
+
+.tierItems {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  align-content: flex-start;
+}
+
+.poolSection {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.poolLabel {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.poolItems {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 70px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  transition: background 0.15s ease;
+}
+
+.poolItemsOver {
+  background: var(--bg-surface);
+}
+
+/* item arrastável */
+.item {
+  width: 56px;
+  cursor: grab;
+  position: relative;
+}
+
+.itemDragging {
+  opacity: 0.35;
+}
+
+.itemCover {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--bg-surface-raised);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+}
+
+.itemTitle {
+  font-size: 0.62rem;
+  color: var(--ink-muted);
+  margin-top: 4px;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.readOnlyBadge {
+  display: inline-block;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+  margin-top: 6px;
+}
+
+.emptyState {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 24px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  max-width: 1000px;
+  margin: 24px auto 0;
+}
+
+@media (max-width: 640px) {
+  .header,
+  .hint,
+  .searchSection,
+  .board {
+    padding: 0 20px;
+  }
+
+  .backLink {
+    margin-left: 20px;
+  }
+
+  .tierLabel {
+    width: 44px;
+    font-size: 1.05rem;
+  }
+}
