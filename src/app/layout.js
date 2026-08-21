@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 
 export const metadata = {
-    title: 'FrontEnd - Codeverse',
+    title: 'RiffNote. Toda Música Guardada.',
     description: 'Template do Codeverse',
 };
 

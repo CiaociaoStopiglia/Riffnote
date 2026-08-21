@@ -33,21 +33,22 @@ if (typeof window !== 'undefined') {
 // Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
 const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
 
-// Atividade "social" ainda é mock — isso viria do seu próprio backend
-// (avaliações e resenhas de usuários), não de uma API de catálogo de música.
+// Atividade "social" — troque o link do avatar de cada amigo quando tiver.
 const RECENT_ACTIVITY = [
   {
     id: 1,
-    user: 'marina.ouve',
+    user: 'Ferreirag4',
+    avatar: 'https://a.ltrbxd.com/resized/avatar/upload/4/5/4/9/3/3/2/shard/avtr-0-220-0-220-crop.jpg?v=de3da1ddee', // cole aqui o link da foto dele
     action: 'avaliou',
-    album: 'In Rainbows',
+    album: 'Queen II',
     hue: '#c9432b',
     time: '2 min',
-    text: 'Cada faixa é um encaixe perfeito. "Weird Fishes" me pega toda vez.',
+    text: 'Cada faixa é um encaixe perfeito. "Father to Son" me pega toda vez.',
   },
   {
     id: 2,
-    user: 'pedrovinil',
+    user: 'Supremeduck3',
+    avatar: 'https://avatars.githubusercontent.com/u/195989606?v=4', // cole aqui o link da foto dele
     action: 'resenhou',
     album: 'Currents',
     hue: '#8a9a5b',
@@ -56,12 +57,13 @@ const RECENT_ACTIVITY = [
   },
   {
     id: 3,
-    user: 'lu.faixas',
+    user: 'lillys',
+    avatar: 'https://res.cloudinary.com/bmndos6m/image/upload/v1787101901/riffnote/avatars/QBClO5JlsEe8LWZIsbcmghbgK2x2/icb8awjdmdtfv0l5ocvo.jpg', // cole aqui o link da foto dela
     action: 'adicionou à lista',
-    album: 'To Pimp a Butterfly',
+    album: 'Collide With The Sky',
     hue: '#5c564a',
     time: '41 min',
-    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve rap".',
+    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve Emo".',
   },
 ];
 
@@ -333,7 +335,7 @@ export default function Home() {
       {/* Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>
-          <img src="/logo.png" alt="Riffnote" className={styles.logoIcon} />
+          <img src="/icon.png" alt="Riffnote" className={styles.logoIcon} />
           Riffnote
         </div>
         <nav className={styles.navLinks}>
@@ -525,7 +527,11 @@ export default function Home() {
               <div key={item.id} className={styles.reviewCard}>
                 <div
                   className={styles.reviewCover}
-                  style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
+                  style={
+                    item.avatar
+                      ? { backgroundImage: `url(${item.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                      : { background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }
+                  }
                 />
                 <div className={styles.reviewBody}>
                   <div className={styles.reviewHeader}>
