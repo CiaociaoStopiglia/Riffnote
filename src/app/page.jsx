@@ -249,7 +249,9 @@ export default function Home() {
 
     setLoadingLastfm(true);
     loadLastfmTracks(user.uid)
-      .catch(() => {})
+      .catch((err) => {
+        console.error('Erro ao carregar faixas do Last.fm:', err);
+      })
       .finally(() => setLoadingLastfm(false));
 
     // atualiza sozinho a cada 60s, sem precisar recarregar a página
