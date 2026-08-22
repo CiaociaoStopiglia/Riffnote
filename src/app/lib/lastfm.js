@@ -27,7 +27,10 @@ export async function fetchRecentTracks(username, limit = 25) {
     params: { username, limit },
   });
 
-  const items = data?.recenttracks?.track ?? [];
+  let items = data?.recenttracks?.track ?? [];
+  if (items && !Array.isArray(items)) {
+    items = [items];
+  }
 
   return items.map((item, i) => ({
     id: `${item.mbid || item.name}-${item.date?.uts || `now-${i}`}`,

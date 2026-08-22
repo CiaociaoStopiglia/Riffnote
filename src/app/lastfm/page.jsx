@@ -72,6 +72,9 @@ export default function LastfmPage() {
       setConnectedUsername(clean);
       setTracks(recent);
       toast.success('Last.fm conectado!');
+      setTimeout(() => {
+        router.back();
+      }, 1200);
     } catch (err) {
       const message = err.response?.data?.error || 'Não consegui conectar. Confere o username.';
       toast.error(message);
