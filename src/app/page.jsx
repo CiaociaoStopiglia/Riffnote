@@ -41,18 +41,16 @@ const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false
 const RECENT_ACTIVITY = [
   {
     id: 1,
-    user: 'Ferreirag4',
-    avatar: 'https://a.ltrbxd.com/resized/avatar/upload/4/5/4/9/3/3/2/shard/avtr-0-220-0-220-crop.jpg?v=de3da1ddee', // cole aqui o link da foto dele
+    user: 'marina.ouve',
     action: 'avaliou',
-    album: 'Queen II',
+    album: 'In Rainbows',
     hue: '#c9432b',
     time: '2 min',
-    text: 'Cada faixa é um encaixe perfeito. "Father to Son" me pega toda vez.',
+    text: 'Cada faixa é um encaixe perfeito. "Weird Fishes" me pega toda vez.',
   },
   {
     id: 2,
-    user: 'Supremeduck3',
-    avatar: 'https://avatars.githubusercontent.com/u/195989606?v=4', // cole aqui o link da foto dele
+    user: 'pedrovinil',
     action: 'resenhou',
     album: 'Currents',
     hue: '#8a9a5b',
@@ -61,13 +59,12 @@ const RECENT_ACTIVITY = [
   },
   {
     id: 3,
-    user: 'lillys',
-    avatar: 'https://res.cloudinary.com/bmndos6m/image/upload/v1787101901/riffnote/avatars/QBClO5JlsEe8LWZIsbcmghbgK2x2/icb8awjdmdtfv0l5ocvo.jpg', // cole aqui o link da foto dela
+    user: 'lu.faixas',
     action: 'adicionou à lista',
-    album: 'Collide With The Sky',
+    album: 'To Pimp a Butterfly',
     hue: '#5c564a',
     time: '41 min',
-    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve Emo".',
+    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve rap".',
   },
 ];
 
@@ -250,13 +247,14 @@ export default function Home() {
     setLoadingLastfm(true);
     loadLastfmTracks(user.uid)
       .catch((err) => {
-        console.error('Erro ao carregar faixas do Last.fm:', err);
+        console.error('Erro ao buscar Last.fm:', err);
+        toast.error('Não consegui buscar seu histórico do Last.fm. Confere se a API key está certa no .env.local.');
       })
       .finally(() => setLoadingLastfm(false));
 
     // atualiza sozinho a cada 60s, sem precisar recarregar a página
     const interval = setInterval(() => {
-      loadLastfmTracks(user.uid).catch(() => {});
+      loadLastfmTracks(user.uid).catch((err) => console.error('Erro ao atualizar Last.fm:', err));
     }, 60_000);
 
     return () => clearInterval(interval);
@@ -411,7 +409,7 @@ export default function Home() {
       {/* Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>
-          <img src="/icon.png" alt="Riffnote" className={styles.logoIcon} />
+          <img src="/logo.png" alt="Riffnote" className={styles.logoIcon} />
           Riffnote
         </div>
         <nav className={styles.navLinks}>
@@ -676,20 +674,9 @@ export default function Home() {
             {RECENT_ACTIVITY.map((item) => (
               <div key={item.id} className={styles.reviewCard}>
                 <div
-                  className={styles.reviewAvatar}
-                  style={{ borderColor: item.hue }}
-                >
-                  {item.avatar ? (
-                    <img src={item.avatar} alt={item.user} className={styles.reviewAvatarImage} />
-                  ) : (
-                    <span
-                      className={styles.reviewAvatarFallback}
-                      style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
-                    >
-                      {item.user.charAt(0).toUpperCase()}
-                    </span>
-                  )}
-                </div>
+                  className={styles.reviewCover}
+                  style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
+                />
                 <div className={styles.reviewBody}>
                   <div className={styles.reviewHeader}>
                     <span className={styles.reviewUser}>{item.user}</span>
