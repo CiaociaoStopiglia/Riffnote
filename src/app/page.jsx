@@ -248,7 +248,8 @@ export default function Home() {
     loadLastfmTracks(user.uid)
       .catch((err) => {
         console.error('Erro ao buscar Last.fm:', err);
-        toast.error('Não consegui buscar seu histórico do Last.fm. Confere se a API key está certa no .env.local.');
+        const message = err.response?.data?.error || 'Não consegui buscar seu histórico do Last.fm.';
+        toast.error(message);
       })
       .finally(() => setLoadingLastfm(false));
 
@@ -266,7 +267,8 @@ export default function Home() {
     try {
       await loadLastfmTracks(user.uid);
     } catch (err) {
-      toast.error('Não consegui atualizar agora.');
+      const message = err.response?.data?.error || 'Não consegui atualizar agora.';
+      toast.error(message);
     } finally {
       setRefreshingLastfm(false);
     }
