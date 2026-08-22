@@ -489,6 +489,242 @@
   gap: 2px;
 }
 
+/* ---------- O que você andou ouvindo (Last.fm) ---------- */
+
+.lastfmRowWrap {
+  position: relative;
+  margin: 0 -32px;
+  padding: 0 32px;
+}
+
+.lastfmRowWrap::before,
+.lastfmRowWrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 8px;
+  width: 48px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.lastfmRowWrap::before {
+  left: 0;
+  background: linear-gradient(90deg, var(--bg-void), transparent);
+}
+
+.lastfmRowWrap::after {
+  right: 0;
+  background: linear-gradient(270deg, var(--bg-void), transparent);
+}
+
+.lastfmRow {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  padding: 4px 32px 10px;
+  margin: 0 -32px;
+  scroll-snap-type: x proximity;
+  /* esconde a barra de rolagem nativa, sem esconder a rolagem em si */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.lastfmRow::-webkit-scrollbar {
+  display: none;
+}
+
+.lastfmCard {
+  flex-shrink: 0;
+  width: 140px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font-family: var(--font-body);
+  scroll-snap-align: start;
+}
+
+.lastfmCard:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* mesma assinatura visual dos álbuns em alta: um disco que espia atrás
+   da capa e gira quando você passa o mouse */
+.lastfmSleeve {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+.lastfmDisc {
+  position: absolute;
+  top: 50%;
+  right: -10%;
+  width: 78%;
+  aspect-ratio: 1 / 1;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: repeating-radial-gradient(circle at center, #050405 0px, #050405 2px, #100d10 3px, #100d10 5px);
+  box-shadow: 0 0 0 1px rgba(237, 230, 214, 0.06);
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.lastfmDisc::after {
+  content: '';
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: #ff4d3d;
+}
+
+.lastfmCard:hover .lastfmDisc {
+  opacity: 1;
+  animation: lastfmSpin 2.2s linear infinite;
+}
+
+@keyframes lastfmSpin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.lastfmCoverWrap {
+  position: relative;
+  z-index: 2;
+  width: 140px;
+  height: 140px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg-surface-raised);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lastfmCard:hover .lastfmCoverWrap {
+  transform: translateX(-14%) rotate(-3deg);
+}
+
+.lastfmCoverWrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.lastfmCoverFallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(150deg, #201a1c, #0e0c0e 130%);
+}
+
+.lastfmNowPlaying {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(11, 10, 13, 0.75);
+  backdrop-filter: blur(4px);
+  color: #ff4d3d;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.lastfmPulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff4d3d;
+  animation: lastfmPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes lastfmPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.lastfmRateOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 10, 13, 0.72);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.lastfmCard:hover .lastfmRateOverlay {
+  opacity: 1;
+}
+
+.lastfmTrackTitle {
+  margin-top: 12px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lastfmTrackArtist {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lastfmEmpty {
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  padding: 16px 0;
+}
+
+.lastfmRefreshBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.lastfmRefreshBtn:hover {
+  color: var(--accent-soft);
+}
+
+.lastfmRefreshBtn:disabled {
+  cursor: default;
+}
+
+.spinning {
+  animation: lastfmSpinIcon 0.9s linear infinite;
+}
+
+@keyframes lastfmSpinIcon {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .albumCard {
   cursor: pointer;
   text-decoration: none;
@@ -688,11 +924,39 @@
   border-bottom: none;
 }
 
-.reviewCover {
-  width: 56px;
-  height: 56px;
+.reviewAvatar {
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
+  background: var(--bg-surface-raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   flex-shrink: 0;
+  border: 2px solid var(--line);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--ink-muted);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.reviewAvatar:hover {
+  transform: scale(1.06);
+}
+
+.reviewAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.reviewAvatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .reviewBody {

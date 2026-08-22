@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input, Select, Spin } from 'antd';
 import toast from 'react-hot-toast';
-import { ArrowLeft, User, ShieldCheck, Lock, Save, Mail, KeyRound } from 'lucide-react';
+import { ArrowLeft, User, ShieldCheck, Lock, Save, Mail, KeyRound, Radio } from 'lucide-react';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
@@ -251,6 +251,10 @@ export default function SettingsPage() {
         <nav className={styles.nav}>
           <NavItem icon={User} label="Perfil" active={section === 'perfil'} onClick={() => setSection('perfil')} />
           <NavItem icon={ShieldCheck} label="Conta" active={section === 'conta'} onClick={() => setSection('conta')} />
+
+          <Link href="/lastfm" className={styles.navItem} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Radio size={16} /> Last.fm
+          </Link>
           <NavItem
             icon={Lock}
             label="Privacidade"

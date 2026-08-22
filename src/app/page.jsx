@@ -15,6 +15,7 @@ import {
   X,
   LogOut,
   Settings,
+  RefreshCw,
 } from 'lucide-react';
 import styles from './page.module.css';
 import { fetchTopAlbums, searchAlbums, searchTracks, extractTopArtists, fillMissingArtwork } from './lib/musicApi';
@@ -23,6 +24,8 @@ import TrackResultRow from './components/TrackResultRow';
 import AvatarFrame from './components/AvatarFrame';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
+import { useRouter } from 'next/navigation';
+import { getLastfmUsername, fetchRecentTracks } from './lib/lastfm';
 
 // ScrollTrigger e SplitText tocam no DOM, então só registram no navegador
 // (nunca no build/SSR).
@@ -33,7 +36,8 @@ if (typeof window !== 'undefined') {
 // Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
 const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
 
-// Atividade "social" — troque o link do avatar de cada amigo quando tiver.
+// Atividade "social" ainda é mock — isso viria do seu próprio backend
+// (avaliações e resenhas de usuários), não de uma API de catálogo de música.
 const RECENT_ACTIVITY = [
   {
     id: 1,
@@ -112,6 +116,13 @@ function AlbumCard({ album }) {
 
 export default function Home() {
   const { user, logOut } = useAuth();
+  const router = useRouter();
+
+  const [lastfmUsername, setLastfmUsername] = useState(null);
+  const [lastfmTracks, setLastfmTracks] = useState([]);
+  const [loadingLastfm, setLoadingLastfm] = useState(false);
+  const [refreshingLastfm, setRefreshingLastfm] = useState(false);
+  const [matchingTrackId, setMatchingTrackId] = useState(null);
   const pageRef = useRef(null);
   const titleRef = useRef(null);
   const drawingRef = useRef(null);
@@ -213,6 +224,69 @@ export default function Home() {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  // Busca as últimas músicas do Last.fm da pessoa, se ela tiver conectado.
+  // Extraído como função própria pra poder chamar tanto no polling automático
+  // quanto no clique manual do botão de atualizar.
+  async function loadLastfmTracks(uid) {
+    const username = await getLastfmUsername(uid);
+    if (!username) {
+      setLastfmUsername(null);
+      setLastfmTracks([]);
+      return;
+    }
+    setLastfmUsername(username);
+    const recent = await fetchRecentTracks(username, 10);
+    setLastfmTracks(recent);
+  }
+
+  useEffect(() => {
+    if (!user) {
+      setLastfmUsername(null);
+      setLastfmTracks([]);
+      return;
+    }
+
+    setLoadingLastfm(true);
+    loadLastfmTracks(user.uid)
+      .catch(() => {})
+      .finally(() => setLoadingLastfm(false));
+
+    // atualiza sozinho a cada 60s, sem precisar recarregar a página
+    const interval = setInterval(() => {
+      loadLastfmTracks(user.uid).catch(() => {});
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, [user]);
+
+  async function handleRefreshLastfm() {
+    if (!user || refreshingLastfm) return;
+    setRefreshingLastfm(true);
+    try {
+      await loadLastfmTracks(user.uid);
+    } catch (err) {
+      toast.error('Não consegui atualizar agora.');
+    } finally {
+      setRefreshingLastfm(false);
+    }
+  }
+
+  async function handleRateLastfmTrack(track) {
+    setMatchingTrackId(track.id);
+    try {
+      const results = await searchTracks(`${track.title} ${track.artist}`, { limit: 1 });
+      if (results.length === 0) {
+        toast.error('Não achei esse álbum no catálogo do Riffnote.');
+        return;
+      }
+      router.push(`/album/${results[0].albumId}`);
+    } catch (err) {
+      toast.error('Não consegui buscar esse álbum.');
+    } finally {
+      setMatchingTrackId(null);
+    }
+  }
 
   // GSAP + SplitText: entrada do hero letra por letra, títulos de seção que
   // se revelam palavra por palavra ACOMPANHANDO o scroll (scrub — não é só
@@ -426,6 +500,80 @@ export default function Home() {
         </div>
       </section>
 
+      {/* O que você andou ouvindo (Last.fm) — só aparece pra quem conectou */}
+      {user && lastfmUsername && (
+        <section className={styles.section} data-reveal-section>
+          <div className={styles.sectionHead}>
+            <div>
+              <span className={styles.sectionEyebrow}>via Last.fm</span>
+              <h2 className={styles.sectionTitle}>O que você andou ouvindo</h2>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <button
+                type="button"
+                className={styles.lastfmRefreshBtn}
+                onClick={handleRefreshLastfm}
+                disabled={refreshingLastfm}
+                title="Atualizar agora"
+              >
+                <RefreshCw size={14} className={refreshingLastfm ? styles.spinning : ''} />
+              </button>
+              <Link href="/lastfm" className={styles.sectionLink}>
+                gerenciar
+              </Link>
+            </div>
+          </div>
+
+          {loadingLastfm ? (
+            <div className={styles.loadingRow}>
+              <Spin /> <span>carregando…</span>
+            </div>
+          ) : lastfmTracks.length === 0 ? (
+            <div className={styles.lastfmEmpty}>Nenhuma música recente encontrada.</div>
+          ) : (
+            <div className={styles.lastfmRowWrap}>
+              <div className={styles.lastfmRow}>
+                {lastfmTracks.map((track, i) => (
+                  <motion.button
+                    key={track.id}
+                    type="button"
+                    className={styles.lastfmCard}
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                    whileHover={{ y: -6 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => handleRateLastfmTrack(track)}
+                    disabled={matchingTrackId === track.id}
+                  >
+                    <div className={styles.lastfmSleeve}>
+                      <span className={styles.lastfmDisc} />
+                      <div className={styles.lastfmCoverWrap}>
+                        {track.artwork ? (
+                          <img src={track.artwork} alt={track.title} />
+                        ) : (
+                          <div className={styles.lastfmCoverFallback} />
+                        )}
+                        {track.nowPlaying && (
+                          <span className={styles.lastfmNowPlaying}>
+                            <span className={styles.lastfmPulseDot} /> agora
+                          </span>
+                        )}
+                        <div className={styles.lastfmRateOverlay}>
+                          {matchingTrackId === track.id ? 'buscando…' : 'avaliar'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className={styles.lastfmTrackTitle}>{track.title}</div>
+                    <div className={styles.lastfmTrackArtist}>{track.artist}</div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Em alta / Resultados de busca */}
       <section className={styles.section} data-reveal-section>
         <div className={styles.sectionHead}>
@@ -526,13 +674,20 @@ export default function Home() {
             {RECENT_ACTIVITY.map((item) => (
               <div key={item.id} className={styles.reviewCard}>
                 <div
-                  className={styles.reviewCover}
-                  style={
-                    item.avatar
-                      ? { backgroundImage: `url(${item.avatar})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                      : { background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }
-                  }
-                />
+                  className={styles.reviewAvatar}
+                  style={{ borderColor: item.hue }}
+                >
+                  {item.avatar ? (
+                    <img src={item.avatar} alt={item.user} className={styles.reviewAvatarImage} />
+                  ) : (
+                    <span
+                      className={styles.reviewAvatarFallback}
+                      style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
+                    >
+                      {item.user.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
                 <div className={styles.reviewBody}>
                   <div className={styles.reviewHeader}>
                     <span className={styles.reviewUser}>{item.user}</span>

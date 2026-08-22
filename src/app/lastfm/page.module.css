@@ -1,0 +1,238 @@
+/* src/app/lastfm/page.module.css */
+.page {
+  --bg-void: #121014;
+  --bg-surface: #1c1920;
+  --bg-surface-raised: #242028;
+  --line: #322c36;
+  --ink: #f4efe6;
+  --ink-muted: #a89f92;
+  --ink-faint: #6f6860;
+  --amber: #e8963c;
+  --lastfm-red: #d51007;
+
+  min-height: 100vh;
+  background: var(--bg-void);
+  color: var(--ink);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 60px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 20px 0 0 32px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.backLink:hover {
+  color: var(--ink);
+}
+
+.loadingPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-void);
+  color: var(--ink-muted);
+}
+
+.header {
+  max-width: 780px;
+  margin: 20px auto 0;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title {
+  font-weight: 800;
+  font-size: 1.8rem;
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  color: var(--ink-muted);
+  font-size: 0.88rem;
+  margin-top: 6px;
+  max-width: 780px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 32px;
+}
+
+.connectState {
+  max-width: 480px;
+  margin: 50px auto 0;
+  padding: 0 32px;
+}
+
+.connectCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.connectLabel {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  margin-bottom: 8px;
+  display: block;
+}
+
+.connectRow {
+  display: flex;
+  gap: 10px;
+}
+
+.connectRow :global(.ant-input) {
+  background: var(--bg-void) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.connectBtn {
+  background: var(--lastfm-red);
+  border: none;
+  border-radius: 8px;
+  padding: 0 20px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.86rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.connectBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.connectHint {
+  margin-top: 14px;
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  line-height: 1.5;
+}
+
+.connectHint a {
+  color: var(--amber);
+  text-decoration: none;
+}
+
+.connectHint a:hover {
+  text-decoration: underline;
+}
+
+.list {
+  max-width: 780px;
+  margin: 28px auto 0;
+  padding: 0 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cover {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--bg-surface-raised);
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.trackTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nowPlayingBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--lastfm-red);
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+.trackMeta {
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rateBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 14px;
+  color: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rateBtn:hover {
+  border-color: var(--amber);
+}
+
+.rateBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.disconnectRow {
+  max-width: 780px;
+  margin: 28px auto 0;
+  padding: 0 32px;
+}
+
+.disconnectBtn {
+  background: none;
+  border: none;
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.disconnectBtn:hover {
+  color: #d64545;
+}
+
+.emptyState {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  max-width: 780px;
+  margin: 24px auto 0;
+}
