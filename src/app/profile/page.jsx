@@ -16,6 +16,7 @@ import { listActivity } from '../lib/activity';
 import { listListenlist, removeFromListenlist } from '../lib/listenlist';
 import { listUserLists, createList } from '../lib/lists';
 import { useAuth } from '../context/AuthContext';
+import { isAdminEmail } from '../lib/admin';
 import StarRating from '../components/StarRating';
 import AvatarFrame from '../components/AvatarFrame';
 import FollowListModal from '../components/FollowListModal';
@@ -242,7 +243,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${isAdminEmail(user.email) ? styles.adminBg : ''}`}>
       <Link href="/" className={styles.backLink}>
         <ArrowLeft size={16} /> voltar
       </Link>
@@ -385,37 +386,53 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.bioSection} style={{ marginTop: 28 }}>
-              <span className={styles.bioLabel}>Álbuns avaliados</span>
+              <div className={styles.sectionRow}>
+                <span className={styles.bioLabel}>Álbuns avaliados</span>
+                {ratedAlbums.length > 12 && (
+                  <Link href="/profile/albuns" className={styles.toggleLink}>
+                    ver todos ({ratedAlbums.length})
+                  </Link>
+                )}
+              </div>
               {ratedAlbums.length === 0 ? (
                 <div className={styles.emptyState} style={{ marginTop: 12 }}>
                   Você ainda não avaliou nenhum álbum. Procura um na home e dá sua nota!
                 </div>
               ) : (
-                <div className={styles.ratedGrid} style={{ marginTop: 14 }}>
-                  {ratedAlbums.map((item) => (
-                    <div key={item.albumId} className={styles.ratedCardWrap}>
-                      <button
-                        type="button"
-                        className={styles.ratedRemoveBtn}
-                        onClick={() => handleRemoveRating(item.albumId)}
-                        title="Remover avaliação"
-                      >
-                        <X size={13} />
-                      </button>
-                      <Link href={`/album/${item.albumId}`} className={styles.ratedCard}>
-                        {item.artwork ? (
-                          <img src={item.artwork} alt={item.albumTitle} className={styles.ratedCover} />
-                        ) : (
-                          <div className={styles.ratedCover} />
-                        )}
-                        <div className={styles.ratedTitle}>{item.albumTitle}</div>
-                        <div className={styles.ratedArtist}>{item.albumArtist}</div>
-                        <div className={styles.ratedStars}>
-                          <StarRating value={item.rating} readOnly size={13} />
-                        </div>
+                <div className={styles.ratedGridPreviewWrap}>
+                  <div className={styles.ratedGrid} style={{ marginTop: 14 }}>
+                    {ratedAlbums.slice(0, 12).map((item) => (
+                      <div key={item.albumId} className={styles.ratedCardWrap}>
+                        <button
+                          type="button"
+                          className={styles.ratedRemoveBtn}
+                          onClick={() => handleRemoveRating(item.albumId)}
+                          title="Remover avaliação"
+                        >
+                          <X size={13} />
+                        </button>
+                        <Link href={`/album/${item.albumId}`} className={styles.ratedCard}>
+                          {item.artwork ? (
+                            <img src={item.artwork} alt={item.albumTitle} className={styles.ratedCover} />
+                          ) : (
+                            <div className={styles.ratedCover} />
+                          )}
+                          <div className={styles.ratedTitle}>{item.albumTitle}</div>
+                          <div className={styles.ratedArtist}>{item.albumArtist}</div>
+                          <div className={styles.ratedStars}>
+                            <StarRating value={item.rating} readOnly size={13} />
+                          </div>
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                  {ratedAlbums.length > 12 && (
+                    <div className={styles.ratedGridFade}>
+                      <Link href="/profile/albuns" className={styles.ratedGridFadeBtn}>
+                        Ver todos os {ratedAlbums.length} álbuns
                       </Link>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>

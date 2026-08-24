@@ -2,19 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 .page {
-  --bg-void: #0b0a0d;
-  --bg-surface: #17151a;
-  --bg-surface-raised: #1f1c21;
-  --line: #2a2620;
-  --ink: #ede6d6;
-  --ink-muted: #948c7b;
-  --ink-faint: #5c564a;
-  --accent: #c9432b;
-  --accent-soft: #e06a4d;
-  --moss: #8a9a5b;
-  --amber: var(--accent);
-  --amber-soft: var(--accent-soft);
-  --teal: var(--moss);
+  --bg-void: #121014;
+  --bg-surface: #1c1920;
+  --bg-surface-raised: #242028;
+  --line: #322c36;
+  --ink: #f4efe6;
+  --ink-muted: #a89f92;
+  --ink-faint: #6f6860;
+  --amber: #e8963c;
+  --amber-soft: #f2b46b;
+  --teal: #3fa796;
 
   min-height: 100vh;
   background: var(--bg-void);
@@ -377,6 +374,40 @@
 
 .ratedCardWrap {
   position: relative;
+}
+
+/* limita o grid de álbuns a ~2 fileiras, com degradê + botão "ver todos" */
+.ratedGridPreviewWrap {
+  position: relative;
+}
+
+.ratedGridFade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, transparent, var(--bg-void));
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 14px;
+}
+
+.ratedGridFadeBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 9px 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.ratedGridFadeBtn:hover {
+  border-color: var(--amber);
+  color: var(--amber-soft);
 }
 
 .ratedRemoveBtn {
