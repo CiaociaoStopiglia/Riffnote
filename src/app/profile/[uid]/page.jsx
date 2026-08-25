@@ -21,7 +21,7 @@ import AvatarFrame from '../../components/AvatarFrame';
 import FollowListModal from '../../components/FollowListModal';
 import styles from '../page.module.css';
 
-const TABS = ['Perfil', 'Atividade', 'Listas', 'Listenlist'];
+const TABS = ['Perfil', 'Sulco', 'Atividade', 'Listas', 'Listenlist'];
 
 function timeAgo(timestamp) {
   if (!timestamp?.seconds) return '';
@@ -32,6 +32,34 @@ function timeAgo(timestamp) {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `${hours}h`;
   return `${Math.floor(hours / 24)}d`;
+}
+
+const MONTH_NAMES = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+];
+
+function formatDay(timestamp) {
+  if (!timestamp?.seconds) return '--';
+  return String(new Date(timestamp.seconds * 1000).getDate()).padStart(2, '0');
+}
+
+function groupByMonth(items) {
+  const groups = new Map();
+  for (const item of items) {
+    const seconds = item.updatedAt?.seconds || item.createdAt?.seconds;
+    if (!seconds) continue;
+    const date = new Date(seconds * 1000);
+    const key = `${date.getFullYear()}-${date.getMonth()}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  return Array.from(groups.entries())
+    .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+    .map(([key, entries]) => {
+      const [year, month] = key.split('-').map(Number);
+      return [`${MONTH_NAMES[month]} ${year}`, entries];
+    });
 }
 
 export default function PublicProfilePage() {
@@ -357,6 +385,45 @@ export default function PublicProfilePage() {
                 </div>
               )}
             </div>
+          </>
+        )}
+
+        {activeTab === 'Sulco' && (
+          <>
+            {ratedAlbums.length === 0 ? (
+              <div className={styles.emptyState}>
+                {profile.displayName || 'Esse usuário'} ainda não tem nada no sulco.
+              </div>
+            ) : (
+              <div className={styles.sulcoWrap}>
+                {groupByMonth(ratedAlbums).map(([monthLabel, entries]) => (
+                  <div key={monthLabel}>
+                    <div className={styles.sulcoMonth}>{monthLabel}</div>
+                    {entries.map((item) => (
+                      <div key={item.albumId} className={styles.sulcoEntry}>
+                        <span className={styles.sulcoDay}>{formatDay(item.updatedAt)}</span>
+                        <span className={styles.sulcoDot} />
+                        <Link href={`/album/${item.albumId}`} className={styles.sulcoCover}>
+                          {item.artwork ? (
+                            <img src={item.artwork} alt={item.albumTitle} />
+                          ) : (
+                            <div className={styles.sulcoCoverFallback} />
+                          )}
+                        </Link>
+                        <div className={styles.sulcoBody}>
+                          <Link href={`/album/${item.albumId}`} className={styles.sulcoTitle}>
+                            {item.albumTitle}
+                          </Link>
+                          <div className={styles.sulcoArtist}>{item.albumArtist}</div>
+                          <StarRating value={item.rating} readOnly size={12} />
+                          {item.review && <p className={styles.sulcoReview}>"{item.review}"</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
           </>
         )}
 
