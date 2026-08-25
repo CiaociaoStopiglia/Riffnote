@@ -951,6 +951,98 @@
   gap: 4px;
 }
 
+/* ---------- Ticker de atividade (compacto, gira sozinho) ---------- */
+
+.activityTicker {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tickerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tickerRow:last-child {
+  border-bottom: none;
+}
+
+.tickerAvatarLink {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.tickerAvatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.tickerBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.tickerLine {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 0.84rem;
+}
+
+.tickerName {
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.tickerName:hover {
+  text-decoration: underline;
+}
+
+.tickerAction {
+  color: var(--ink-faint);
+}
+
+.tickerAlbum {
+  color: var(--accent-soft);
+  font-weight: 600;
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.tickerAlbum:hover {
+  text-decoration: underline;
+}
+
+.tickerTime {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+
+.tickerSnippet {
+  margin-top: 3px;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .reviewCard {
   display: flex;
   gap: 16px;

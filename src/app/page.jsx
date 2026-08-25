@@ -27,6 +27,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
 import { useRouter } from 'next/navigation';
 import { getLastfmUsername, fetchRecentTracks } from './lib/lastfm';
+import { listFollowing } from './lib/social';
+import { listActivity } from './lib/activity';
 
 // ScrollTrigger e SplitText tocam no DOM, então só registram no navegador
 // (nunca no build/SSR).
@@ -37,37 +39,19 @@ if (typeof window !== 'undefined') {
 // Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
 const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
 
-// Atividade "social" ainda é mock — isso viria do seu próprio backend
-// (avaliações e resenhas de usuários), não de uma API de catálogo de música.
-const RECENT_ACTIVITY = [
-  {
-    id: 1,
-    user: 'marina.ouve',
-    action: 'avaliou',
-    album: 'In Rainbows',
-    hue: '#c9432b',
-    time: '2 min',
-    text: 'Cada faixa é um encaixe perfeito. "Weird Fishes" me pega toda vez.',
-  },
-  {
-    id: 2,
-    user: 'pedrovinil',
-    action: 'resenhou',
-    album: 'Currents',
-    hue: '#8a9a5b',
-    time: '18 min',
-    text: 'Disco de transição que virou obra-prima. A produção envelheceu muito bem.',
-  },
-  {
-    id: 3,
-    user: 'lu.faixas',
-    action: 'adicionou à lista',
-    album: 'To Pimp a Butterfly',
-    hue: '#5c564a',
-    time: '41 min',
-    text: 'Começando minha lista de "álbuns que mudam a forma como você ouve rap".',
-  },
-];
+// Formata "há quanto tempo" a partir de um timestamp do Firestore.
+function timeAgo(timestamp) {
+  if (!timestamp?.seconds) return '';
+  const diffMs = Date.now() - timestamp.seconds * 1000;
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'agora';
+  if (mins < 60) return `${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.floor(hours / 24)}d`;
+}
+
+const ACTIVITY_HUES = ['#c9432b', '#8a9a5b', '#3fa796', '#5c564a'];
 
 const HERO_STEPS = [
   { num: '01', label: 'Registre', desc: 'Todo álbum que você ouvir, guardado no seu histórico.' },
@@ -121,6 +105,11 @@ export default function Home() {
   const [loadingLastfm, setLoadingLastfm] = useState(false);
   const [refreshingLastfm, setRefreshingLastfm] = useState(false);
   const [matchingTrackId, setMatchingTrackId] = useState(null);
+
+  const [friendsActivity, setFriendsActivity] = useState([]);
+  const [activityRotation, setActivityRotation] = useState(0);
+  const [loadingFriendsActivity, setLoadingFriendsActivity] = useState(false);
+  const [followingCount, setFollowingCount] = useState(null); // null = ainda não checou
   const pageRef = useRef(null);
   const titleRef = useRef(null);
   const drawingRef = useRef(null);
@@ -275,6 +264,61 @@ export default function Home() {
       setRefreshingLastfm(false);
     }
   }
+
+  // Atividade de quem você segue — só avaliações e resenhas de álbum,
+  // como pedido (nada de listas, listenlist, etc. aqui).
+  useEffect(() => {
+    if (!user) {
+      setFriendsActivity([]);
+      setFollowingCount(null);
+      return;
+    }
+
+    setLoadingFriendsActivity(true);
+    listFollowing(user.uid)
+      .then(async (following) => {
+        setFollowingCount(following.length);
+        if (following.length === 0) {
+          setFriendsActivity([]);
+          return;
+        }
+
+        const profileMap = Object.fromEntries(following.map((f) => [f.uid, f]));
+
+        const perUser = await Promise.all(
+          following.map((f) =>
+            listActivity(f.uid, 5)
+              .then((acts) => acts.map((a) => ({ ...a, authorUid: f.uid })))
+              .catch(() => [])
+          )
+        );
+
+        const merged = perUser
+          .flat()
+          .filter((a) => a.type === 'rated')
+          .map((a) => ({ ...a, author: profileMap[a.authorUid] }))
+          .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+          .slice(0, 15);
+
+        setFriendsActivity(merged);
+      })
+      .catch(() => setFriendsActivity([]))
+      .finally(() => setLoadingFriendsActivity(false));
+  }, [user]);
+
+  // Gira o "ticker" de atividade uma posição a cada 5s, sempre mostrando
+  // só 3 por vez — se tiver 3 ou menos, nem precisa girar.
+  useEffect(() => {
+    if (friendsActivity.length <= 3) return;
+    const interval = setInterval(() => {
+      setActivityRotation((i) => (i + 1) % friendsActivity.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [friendsActivity.length]);
+
+  const visibleActivity = Array.from({ length: Math.min(3, friendsActivity.length) }, (_, i) =>
+    friendsActivity[(activityRotation + i) % friendsActivity.length]
+  );
 
   async function handleRateLastfmTrack(track) {
     setMatchingTrackId(track.id);
@@ -697,28 +741,69 @@ export default function Home() {
           <div className={styles.sectionHead}>
             <div>
               <span className={styles.sectionEyebrow}>ao vivo</span>
-              <h2 className={styles.sectionTitle} data-split-title>Atividade recente</h2>
+              <h2 className={styles.sectionTitle} data-split-title>Atividade de quem você segue</h2>
             </div>
           </div>
-          <div className={styles.activityFeed}>
-            {RECENT_ACTIVITY.map((item) => (
-              <div key={item.id} className={styles.reviewCard}>
-                <div
-                  className={styles.reviewCover}
-                  style={{ background: `linear-gradient(150deg, ${item.hue}, #0e0c0e 130%)` }}
-                />
-                <div className={styles.reviewBody}>
-                  <div className={styles.reviewHeader}>
-                    <span className={styles.reviewUser}>{item.user}</span>
-                    <span className={styles.reviewAction}>{item.action}</span>
-                    <span className={styles.reviewAlbum}>{item.album}</span>
-                    <span className={styles.reviewMeta}>{item.time}</span>
+
+          {!user ? (
+            <div className={styles.lastfmEmpty}>
+              <Link href="/login" style={{ color: 'var(--accent)' }}>Entra na sua conta</Link> pra ver a
+              atividade de quem você segue.
+            </div>
+          ) : loadingFriendsActivity ? (
+            <div className={styles.loadingRow}>
+              <Spin /> <span>carregando…</span>
+            </div>
+          ) : followingCount === 0 ? (
+            <div className={styles.lastfmEmpty}>
+              Você ainda não segue ninguém.{' '}
+              <Link href="/usuarios" style={{ color: 'var(--accent)' }}>Descobre pessoas</Link> pra
+              ver as avaliações delas aqui.
+            </div>
+          ) : friendsActivity.length === 0 ? (
+            <div className={styles.lastfmEmpty}>
+              Ninguém que você segue avaliou um álbum ainda.
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activityRotation}
+                className={styles.activityTicker}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+              >
+                {visibleActivity.map((item, i) => (
+                  <div key={`${item.authorUid}-${item.id}`} className={styles.tickerRow}>
+                    <Link href={`/profile/${item.authorUid}`} className={styles.tickerAvatarLink}>
+                      {item.author?.photoURL ? (
+                        <img src={item.author.photoURL} alt="" className={styles.tickerAvatar} />
+                      ) : (
+                        <div
+                          className={styles.tickerAvatar}
+                          style={{ background: `linear-gradient(150deg, ${ACTIVITY_HUES[i % ACTIVITY_HUES.length]}, #0e0c0e 130%)` }}
+                        />
+                      )}
+                    </Link>
+                    <div className={styles.tickerBody}>
+                      <div className={styles.tickerLine}>
+                        <Link href={`/profile/${item.authorUid}`} className={styles.tickerName}>
+                          {item.author?.displayName || item.author?.email || 'alguém'}
+                        </Link>
+                        <span className={styles.tickerAction}>{item.review ? 'resenhou' : 'avaliou'}</span>
+                        <Link href={`/album/${item.albumId}`} className={styles.tickerAlbum}>
+                          {item.albumTitle}
+                        </Link>
+                        <span className={styles.tickerTime}>{timeAgo(item.createdAt)}</span>
+                      </div>
+                      {item.review && <p className={styles.tickerSnippet}>"{item.review}"</p>}
+                    </div>
                   </div>
-                  <p className={styles.reviewText}>{item.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </section>
       )}
 
