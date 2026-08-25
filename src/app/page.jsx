@@ -457,7 +457,7 @@ export default function Home() {
       {/* Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>
-          <img src="/logo.png" alt="Riffnote" className={styles.logoIcon} />
+          <img src="/icon.png" alt="Riffnote" className={styles.logoIcon} />
           Riffnote
         </div>
         <nav className={styles.navLinks}>
