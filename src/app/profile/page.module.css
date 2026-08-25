@@ -2,17 +2,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 .page {
-  --bg-void: #121014;
-  --bg-surface: #1c1920;
-  --bg-surface-raised: #242028;
-  --line: #322c36;
-  --ink: #f4efe6;
-  --ink-muted: #a89f92;
-  --ink-faint: #6f6860;
-  --amber: #e8963c;
-  --amber-soft: #f2b46b;
-  --teal: #3fa796;
-
+  --mx: 0;
+  --my: 0;
+  --bg-void: #0b0a0d;
+  --bg-surface: #17151a;
+  --bg-surface-raised: #1f1c21;
+  --line: #2a2620;
+  --ink: #ede6d6;
+  --ink-muted: #948c7b;
+  --ink-faint: #5c564a;
+  --accent: #c9432b;
+  --accent-soft: #e06a4d;
+  --moss: #8a9a5b;
+  
   min-height: 100vh;
   background: var(--bg-void);
   color: var(--ink);

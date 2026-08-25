@@ -16,6 +16,7 @@ import {
   LogOut,
   Settings,
   RefreshCw,
+  Menu,
 } from 'lucide-react';
 import styles from './page.module.css';
 import { fetchTopAlbums, searchAlbums, searchTracks, extractTopArtists, fillMissingArtwork } from './lib/musicApi';
@@ -126,6 +127,7 @@ export default function Home() {
   const statementRef = useRef(null);
 
   const [avatarFrame, setAvatarFrame] = useState('none');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -411,7 +413,7 @@ export default function Home() {
       {/* Navbar */}
       <header className={styles.navbar}>
         <div className={styles.logo}>
-          <img src="/icon.png" alt="Riffnote" className={styles.logoIcon} />
+          <img src="/logo.png" alt="Riffnote" className={styles.logoIcon} />
           Riffnote
         </div>
         <nav className={styles.navLinks}>
@@ -420,6 +422,14 @@ export default function Home() {
           <Link href="/usuarios">Pessoas</Link>
           <Link href="/comunidade">Comunidade</Link>
         </nav>
+        <button
+          type="button"
+          className={styles.mobileMenuBtn}
+          onClick={() => setMobileMenuOpen((v) => !v)}
+          aria-label="Abrir menu"
+        >
+          {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
         <div className={styles.navActions}>
           {user ? (
             <>
@@ -460,6 +470,24 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      {/* Menu mobile — só aparece em telas pequenas, controlado pelo hambúrguer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.nav
+            className={styles.mobileMenu}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            <Link href="/albuns" onClick={() => setMobileMenuOpen(false)}>Álbuns</Link>
+            <Link href="/artistas" onClick={() => setMobileMenuOpen(false)}>Artistas</Link>
+            <Link href="/usuarios" onClick={() => setMobileMenuOpen(false)}>Pessoas</Link>
+            <Link href="/comunidade" onClick={() => setMobileMenuOpen(false)}>Comunidade</Link>
+          </motion.nav>
+        )}
+      </AnimatePresence>
 
       {/* Hero — capa de disco + liner notes */}
       <section className={styles.hero}>
