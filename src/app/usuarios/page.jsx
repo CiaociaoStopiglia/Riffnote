@@ -102,7 +102,11 @@ export default function UsuariosPage() {
       if (alreadyFollowing) {
         await unfollowUser(currentUser.uid, person.uid);
       } else {
-        await followUser(currentUser.uid, person.uid);
+        await followUser(currentUser.uid, person.uid, {
+          displayName: currentUser.displayName,
+          email: currentUser.email,
+          photoURL: currentUser.photoURL,
+        });
         toast.success(`Você começou a seguir ${person.displayName || 'essa pessoa'}.`);
       }
     } catch (err) {

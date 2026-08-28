@@ -7,6 +7,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  getAdditionalUserInfo,
   onAuthStateChanged,
   signOut,
   updateProfile,
@@ -58,8 +59,9 @@ export function AuthProvider({ children }) {
   async function signInWithGoogle() {
     const provider = new GoogleAuthProvider();
     const credential = await signInWithPopup(auth, provider);
+    const isNewUser = !!getAdditionalUserInfo(credential)?.isNewUser;
     await upsertUserDoc(credential.user, { createdAt: serverTimestamp() });
-    return credential.user;
+    return { user: credential.user, isNewUser };
   }
 
   async function logOut() {

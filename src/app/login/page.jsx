@@ -57,11 +57,12 @@ function LoginPageContent() {
         }
         await signUp(email, password, displayName.trim());
         toast.success(`Bem-vindo(a), ${displayName}!`);
+        router.push('/onboarding');
       } else {
         await signIn(email, password);
         toast.success('Login feito com sucesso.');
+        router.push('/');
       }
-      router.push('/');
     } catch (err) {
       setError(translateAuthError(err.code));
     } finally {
@@ -73,9 +74,9 @@ function LoginPageContent() {
     setError('');
     setLoading(true);
     try {
-      await signInWithGoogle();
+      const { isNewUser } = await signInWithGoogle();
       toast.success('Login com Google feito com sucesso.');
-      router.push('/');
+      router.push(isNewUser ? '/onboarding' : '/');
     } catch (err) {
       setError(translateAuthError(err.code));
     } finally {

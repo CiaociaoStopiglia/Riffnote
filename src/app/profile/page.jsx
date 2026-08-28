@@ -10,7 +10,7 @@ import { Camera, ArrowLeft, Save, Pencil, X, Plus, Clock, Star, Bookmark, ListMu
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
-import { uploadImage } from '../lib/cloudinary';
+import { uploadImage, optimizeCloudinaryUrl, checkImageAspectRatio } from '../lib/cloudinary';
 import { listUserRatings, removeRating } from '../lib/ratings';
 import { listActivity } from '../lib/activity';
 import { listListenlist, removeFromListenlist } from '../lib/listenlist';
@@ -18,6 +18,7 @@ import { listUserLists, createList } from '../lib/lists';
 import { useAuth } from '../context/AuthContext';
 import { isAdminEmail } from '../lib/admin';
 import StarRating from '../components/StarRating';
+import FavoriteAlbumsRow from '../components/FavoriteAlbumsRow';
 import AvatarFrame from '../components/AvatarFrame';
 import FollowListModal from '../components/FollowListModal';
 import styles from './page.module.css';
@@ -78,10 +79,12 @@ export default function ProfilePage() {
     bio: '',
     photoURL: '',
     bannerURL: '',
+    bannerStyle: 'bottom',
     followersCount: 0,
     followingCount: 0,
     ratingsCount: 0,
     avatarFrame: 'none',
+    favoriteAlbums: [],
   });
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editingBio, setEditingBio] = useState(false);
@@ -123,9 +126,11 @@ export default function ProfilePage() {
             photoURL: data.photoURL || user.photoURL || '',
             avatarFrame: data.avatarFrame || 'none',
             bannerURL: data.bannerURL || '',
+            bannerStyle: data.bannerStyle || 'bottom',
             followersCount: data.followersCount || 0,
             followingCount: data.followingCount || 0,
             ratingsCount: data.ratingsCount || 0,
+            favoriteAlbums: data.favoriteAlbums || [],
           });
         }
       } catch (err) {
@@ -199,6 +204,14 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file || !validateFile(file)) return;
+
+    const { wide } = await checkImageAspectRatio(file);
+    if (!wide) {
+      toast(
+        'Essa foto é meio estreita pro formato do banner — pode ficar borrada esticada. Fotos bem largas (tipo paisagem) ficam melhores aqui.',
+        { icon: '⚠️', duration: 6000 }
+      );
+    }
 
     setUploadingBanner(true);
     try {
@@ -283,9 +296,13 @@ export default function ProfilePage() {
       <div className={styles.bannerSection}>
         <div
           className={styles.banner}
-          style={profile.bannerURL ? { backgroundImage: `url(${profile.bannerURL})` } : undefined}
+          style={profile.bannerURL ? { backgroundImage: `url(${optimizeCloudinaryUrl(profile.bannerURL)})` } : undefined}
         >
-          <div className={styles.bannerOverlay} />
+          <div
+            className={`${styles.bannerOverlay} ${
+              profile.bannerStyle === 'side' ? styles.bannerOverlaySide : styles.bannerOverlayBottom
+            }`}
+          />
           <button
             type="button"
             className={styles.bannerEditBtn}
@@ -418,9 +435,18 @@ export default function ProfilePage() {
             </div>
 
             <div className={styles.bioSection} style={{ marginTop: 28 }}>
+              <FavoriteAlbumsRow
+                uid={user.uid}
+                albums={profile.favoriteAlbums}
+                editable
+                onChange={(favoriteAlbums) => setProfile((p) => ({ ...p, favoriteAlbums }))}
+              />
+            </div>
+
+            <div className={styles.bioSection} style={{ marginTop: 28 }}>
               <div className={styles.sectionRow}>
                 <span className={styles.bioLabel}>Álbuns avaliados</span>
-                {ratedAlbums.length > 12 && (
+                {ratedAlbums.length > 0 && (
                   <Link href="/profile/albuns" className={styles.toggleLink}>
                     ver todos ({ratedAlbums.length})
                   </Link>
@@ -433,7 +459,7 @@ export default function ProfilePage() {
               ) : (
                 <div className={styles.ratedGridPreviewWrap}>
                   <div className={styles.ratedGrid} style={{ marginTop: 14 }}>
-                    {ratedAlbums.slice(0, 12).map((item) => (
+                    {ratedAlbums.slice(0, 5).map((item) => (
                       <div key={item.albumId} className={styles.ratedCardWrap}>
                         <button
                           type="button"
@@ -458,44 +484,12 @@ export default function ProfilePage() {
                       </div>
                     ))}
                   </div>
-                  {ratedAlbums.length > 12 && (
-                    <div className={styles.ratedGridFade}>
-                      <Link href="/profile/albuns" className={styles.ratedGridFadeBtn}>
-                        Ver todos os {ratedAlbums.length} álbuns
-                      </Link>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
 
-            {/* Resenhas — só os álbuns em que a pessoa escreveu algo além da nota */}
-            {ratedAlbums.some((r) => r.review) && (
-              <div className={styles.bioSection} style={{ marginTop: 28 }}>
-                <span className={styles.bioLabel}>Resenhas</span>
-                <div className={styles.reviewsList} style={{ marginTop: 14 }}>
-                  {ratedAlbums
-                    .filter((r) => r.review)
-                    .map((item) => (
-                      <Link key={item.albumId} href={`/album/${item.albumId}`} className={styles.reviewRow}>
-                        {item.artwork ? (
-                          <img src={item.artwork} alt={item.albumTitle} className={styles.reviewCover} />
-                        ) : (
-                          <div className={styles.reviewCover} />
-                        )}
-                        <div className={styles.reviewBody}>
-                          <div className={styles.reviewTop}>
-                            <span className={styles.reviewTitle}>{item.albumTitle}</span>
-                            <span className={styles.reviewArtistInline}>{item.albumArtist}</span>
-                          </div>
-                          <StarRating value={item.rating} readOnly size={12} />
-                          <p className={styles.reviewText}>{item.review}</p>
-                        </div>
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            )}
+            {/* Resenhas com o texto completo agora vivem na aba Sulco,
+                junto com a linha do tempo — sem duplicar aqui. */}
 
             {/* Preview das listas — a gestão completa fica na aba Listas */}
             <div className={styles.bioSection} style={{ marginTop: 28 }}>

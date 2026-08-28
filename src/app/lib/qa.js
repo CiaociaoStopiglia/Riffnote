@@ -11,6 +11,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { createNotification } from './notifications';
 
 // communityQuestions/{id} -> pergunta sobre um álbum específico
 // communityQuestions/{id}/answers/{aid} -> respostas dessa pergunta
@@ -47,6 +48,19 @@ export async function addAnswer(questionId, user, text) {
     authorName: user.displayName || user.email,
     createdAt: serverTimestamp(),
   });
+
+  // avisa quem perguntou, exceto se a pessoa estiver respondendo a própria pergunta
+  const question = await getQuestion(questionId);
+  if (question && question.authorId !== user.uid) {
+    createNotification(question.authorId, {
+      type: 'answer',
+      fromUid: user.uid,
+      fromName: user.displayName || user.email,
+      fromPhoto: user.photoURL || null,
+      questionId,
+      albumTitle: question.albumTitle,
+    }).catch(() => {});
+  }
 }
 
 export async function listAnswers(questionId) {

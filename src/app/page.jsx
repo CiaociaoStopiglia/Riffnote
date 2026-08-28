@@ -23,6 +23,7 @@ import { fetchTopAlbums, searchAlbums, searchTracks, extractTopArtists, fillMiss
 import { useAuth } from './context/AuthContext';
 import TrackResultRow from './components/TrackResultRow';
 import AvatarFrame from './components/AvatarFrame';
+import NotificationBell from './components/NotificationBell';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from './lib/firebase';
 import { useRouter } from 'next/navigation';
@@ -30,16 +31,12 @@ import { getLastfmUsername, fetchRecentTracks } from './lib/lastfm';
 import { listFollowing } from './lib/social';
 import { listActivity } from './lib/activity';
 
-// ScrollTrigger e SplitText tocam no DOM, então só registram no navegador
-// (nunca no build/SSR).
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, SplitText);
 }
 
-// Three.js/WebGL só existe no navegador — desliga o SSR pra esse componente.
 const VinylScene = dynamic(() => import('./components/VinylScene'), { ssr: false });
 
-// Formata "há quanto tempo" a partir de um timestamp do Firestore.
 function timeAgo(timestamp) {
   if (!timestamp?.seconds) return '';
   const diffMs = Date.now() - timestamp.seconds * 1000;
@@ -109,11 +106,9 @@ export default function Home() {
   const [friendsActivity, setFriendsActivity] = useState([]);
   const [activityRotation, setActivityRotation] = useState(0);
   const [loadingFriendsActivity, setLoadingFriendsActivity] = useState(false);
-  const [followingCount, setFollowingCount] = useState(null); // null = ainda não checou
+  const [followingCount, setFollowingCount] = useState(null);
   const pageRef = useRef(null);
   const titleRef = useRef(null);
-  const drawingRef = useRef(null);
-  const statementRef = useRef(null);
 
   const [avatarFrame, setAvatarFrame] = useState('none');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -197,13 +192,10 @@ export default function Home() {
 
   const showingSearch = searchResults !== null;
 
-  // Move o fundo bem sutilmente seguindo o mouse pela tela inteira.
-  // Escuta direto na window (em vez de onMouseMove no div) pra não
-  // depender do evento borbulhar através do Canvas do Three.js.
   useEffect(() => {
     function handleMouseMove(e) {
       if (!pageRef.current) return;
-      const x = (e.clientX / window.innerWidth - 0.5) * 2; // -1 a 1
+      const x = (e.clientX / window.innerWidth - 0.5) * 2;
       const y = (e.clientY / window.innerHeight - 0.5) * 2;
       pageRef.current.style.setProperty('--mx', x.toFixed(3));
       pageRef.current.style.setProperty('--my', y.toFixed(3));
@@ -213,9 +205,6 @@ export default function Home() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Busca as últimas músicas do Last.fm da pessoa, se ela tiver conectado.
-  // Extraído como função própria pra poder chamar tanto no polling automático
-  // quanto no clique manual do botão de atualizar.
   async function loadLastfmTracks(uid) {
     const username = await getLastfmUsername(uid);
     if (!username) {
@@ -244,7 +233,6 @@ export default function Home() {
       })
       .finally(() => setLoadingLastfm(false));
 
-    // atualiza sozinho a cada 60s, sem precisar recarregar a página
     const interval = setInterval(() => {
       loadLastfmTracks(user.uid).catch((err) => console.error('Erro ao atualizar Last.fm:', err));
     }, 60_000);
@@ -265,8 +253,6 @@ export default function Home() {
     }
   }
 
-  // Atividade de quem você segue — só avaliações e resenhas de álbum,
-  // como pedido (nada de listas, listenlist, etc. aqui).
   useEffect(() => {
     if (!user) {
       setFriendsActivity([]);
@@ -306,8 +292,6 @@ export default function Home() {
       .finally(() => setLoadingFriendsActivity(false));
   }, [user]);
 
-  // Gira o "ticker" de atividade uma posição a cada 5s, sempre mostrando
-  // só 3 por vez — se tiver 3 ou menos, nem precisa girar.
   useEffect(() => {
     if (friendsActivity.length <= 3) return;
     const interval = setInterval(() => {
@@ -336,17 +320,11 @@ export default function Home() {
     }
   }
 
-  // GSAP + SplitText: entrada do hero letra por letra, títulos de seção que
-  // se revelam palavra por palavra ACOMPANHANDO o scroll (scrub — não é só
-  // "aparece uma vez", o progresso da animação é o próprio progresso do
-  // scroll), e um desenho de linha original que se traça sozinho.
   useEffect(() => {
     let titleSplit;
     const sectionSplits = [];
-    let statementSplit;
 
     const ctx = gsap.context(() => {
-      // --- Entrada do hero ---
       if (titleRef.current) {
         titleSplit = SplitText.create(titleRef.current, { type: 'chars' });
       }
@@ -373,7 +351,6 @@ export default function Home() {
       heroTl.from('[data-reveal="search"]', { opacity: 0, y: 14, duration: 0.5 }, '-=0.3');
       heroTl.from('[data-reveal="track"]', { opacity: 0, y: 10, duration: 0.4, stagger: 0.08 }, '-=0.25');
 
-      // --- Conteúdo de cada seção (fade + leve subida ao entrar na tela) ---
       gsap.utils.toArray('[data-reveal-section]').forEach((el) => {
         gsap.from(el, {
           opacity: 0,
@@ -388,7 +365,6 @@ export default function Home() {
         });
       });
 
-      // --- Títulos de seção: palavra por palavra, PRESA ao scroll (scrub) ---
       gsap.utils.toArray('[data-split-title]').forEach((el) => {
         const split = SplitText.create(el, { type: 'words' });
         sectionSplits.push(split);
@@ -405,50 +381,12 @@ export default function Home() {
           },
         });
       });
-
-      // --- Desenho de linha do toca-discos: traça sozinho conforme rola ---
-      if (drawingRef.current) {
-        const drawEls = drawingRef.current.querySelectorAll('path, circle');
-        drawEls.forEach((el) => {
-          const length = el.getTotalLength();
-          gsap.set(el, { strokeDasharray: length, strokeDashoffset: length });
-        });
-        gsap.to(drawEls, {
-          strokeDashoffset: 0,
-          ease: 'none',
-          stagger: 0.18,
-          scrollTrigger: {
-            trigger: drawingRef.current,
-            start: 'top 85%',
-            end: 'bottom 35%',
-            scrub: 1,
-          },
-        });
-      }
-
-      // --- Frase grande: acende palavra por palavra conforme você lê/rola ---
-      if (statementRef.current) {
-        statementSplit = SplitText.create(statementRef.current, { type: 'words' });
-        gsap.from(statementSplit.words, {
-          opacity: 0.1,
-          filter: 'blur(3px)',
-          ease: 'none',
-          stagger: 0.4,
-          scrollTrigger: {
-            trigger: statementRef.current,
-            start: 'top 78%',
-            end: 'bottom 30%',
-            scrub: 0.7,
-          },
-        });
-      }
     }, pageRef);
 
     return () => {
       ctx.revert();
       titleSplit?.revert();
       sectionSplits.forEach((s) => s.revert());
-      statementSplit?.revert();
     };
   }, [showingSearch]);
 
@@ -478,6 +416,7 @@ export default function Home() {
         <div className={styles.navActions}>
           {user ? (
             <>
+              <NotificationBell uid={user.uid} />
               <Link href="/profile" className={styles.navAvatarLink}>
                 <AvatarFrame frame={avatarFrame}>
                 {user.photoURL ? (
@@ -516,7 +455,7 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Menu mobile — só aparece em telas pequenas, controlado pelo hambúrguer */}
+      {/* Menu mobile */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.nav
@@ -576,7 +515,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* O que você andou ouvindo (Last.fm) — só aparece pra quem conectou */}
+      {/* O que você andou ouvindo (Last.fm) — sozinha, largura toda */}
       {user && lastfmUsername && (
         <section className={styles.section} data-reveal-section>
           <div className={styles.sectionHead}>
@@ -650,6 +589,67 @@ export default function Home() {
         </section>
       )}
 
+      {/* Atividade de quem você segue — sozinha, largura toda, embaixo */}
+      <section className={styles.section} data-reveal-section>
+        <div className={styles.sectionHead}>
+          <div>
+            <span className={styles.sectionEyebrow}>ao vivo</span>
+            <h2 className={styles.sectionTitle}>Atividade de quem você segue</h2>
+          </div>
+        </div>
+
+        {!user ? (
+          <div className={styles.lastfmEmpty}>
+            <Link href="/login" style={{ color: 'var(--accent)' }}>Entra na sua conta</Link> pra ver a
+            atividade de quem você segue.
+          </div>
+        ) : loadingFriendsActivity ? (
+          <div className={styles.loadingRow}>
+            <Spin /> <span>carregando…</span>
+          </div>
+        ) : followingCount === 0 ? (
+          <div className={styles.lastfmEmpty}>
+            Você ainda não segue ninguém.{' '}
+            <Link href="/usuarios" style={{ color: 'var(--accent)' }}>Descobre pessoas</Link> pra
+            ver as avaliações delas aqui.
+          </div>
+        ) : friendsActivity.length === 0 ? (
+          <div className={styles.lastfmEmpty}>
+            Ninguém que você segue avaliou um álbum ainda.
+          </div>
+        ) : (
+          <div className={styles.activityTicker}>
+            {visibleActivity.map((item, i) => (
+              <div key={`${item.authorUid}-${item.id}`} className={styles.tickerRowFeatured}>
+                <Link href={`/profile/${item.authorUid}`} className={styles.tickerAvatarLink}>
+                  {item.author?.photoURL ? (
+                    <img src={item.author.photoURL} alt="" className={styles.tickerAvatarBig} />
+                  ) : (
+                    <div
+                      className={styles.tickerAvatarBig}
+                      style={{ background: `linear-gradient(150deg, ${ACTIVITY_HUES[i % ACTIVITY_HUES.length]}, #0e0c0e 130%)` }}
+                    />
+                  )}
+                </Link>
+                <div className={styles.tickerBody}>
+                  <div className={styles.tickerLine}>
+                    <Link href={`/profile/${item.authorUid}`} className={styles.tickerName}>
+                      {item.author?.displayName || item.author?.email || 'alguém'}
+                    </Link>
+                    <span className={styles.tickerAction}>{item.review ? 'resenhou' : 'avaliou'}</span>
+                    <span className={styles.tickerTime}>{timeAgo(item.createdAt)}</span>
+                  </div>
+                  <Link href={`/album/${item.albumId}`} className={styles.tickerAlbumBig}>
+                    {item.albumTitle}
+                  </Link>
+                  {item.review && <p className={styles.tickerSnippet}>"{item.review}"</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* Em alta / Resultados de busca */}
       <section className={styles.section} data-reveal-section>
         <div className={styles.sectionHead}>
@@ -659,10 +659,14 @@ export default function Home() {
               {showingSearch ? `"${query}"` : 'Em alta essa semana'}
             </h2>
           </div>
-          {showingSearch && (
+          {showingSearch ? (
             <button type="button" className={styles.sectionLink} onClick={clearSearch}>
               limpar <X size={13} />
             </button>
+          ) : (
+            <Link href="/albuns" className={styles.sectionLink}>
+              ver todos os álbuns
+            </Link>
           )}
         </div>
 
@@ -680,7 +684,7 @@ export default function Home() {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
             >
-              {(showingSearch ? searchResults : trendingAlbums).map((album) => (
+              {(showingSearch ? searchResults : trendingAlbums.slice(0, 6)).map((album) => (
                 <AlbumCard key={album.id} album={album} />
               ))}
             </motion.div>
@@ -728,108 +732,6 @@ export default function Home() {
             ))}
           </div>
         </section>
-      )}
-
-      {/* Frase grande — acende palavra por palavra conforme você rola */}
-      <div className={styles.statementWrap}>
-        <p className={styles.statement} ref={statementRef}>
-          Não é só ouvir. É lembrar o que ouviu, quando ouviu, e o que sentiu na hora.
-        </p>
-      </div>
-
-      {/* Atividade recente */}
-      {!showingSearch && (
-        <section className={styles.section} data-reveal-section>
-          <div className={styles.sectionHead}>
-            <div>
-              <span className={styles.sectionEyebrow}>ao vivo</span>
-              <h2 className={styles.sectionTitle} data-split-title>Atividade de quem você segue</h2>
-            </div>
-          </div>
-
-          {!user ? (
-            <div className={styles.lastfmEmpty}>
-              <Link href="/login" style={{ color: 'var(--accent)' }}>Entra na sua conta</Link> pra ver a
-              atividade de quem você segue.
-            </div>
-          ) : loadingFriendsActivity ? (
-            <div className={styles.loadingRow}>
-              <Spin /> <span>carregando…</span>
-            </div>
-          ) : followingCount === 0 ? (
-            <div className={styles.lastfmEmpty}>
-              Você ainda não segue ninguém.{' '}
-              <Link href="/usuarios" style={{ color: 'var(--accent)' }}>Descobre pessoas</Link> pra
-              ver as avaliações delas aqui.
-            </div>
-          ) : friendsActivity.length === 0 ? (
-            <div className={styles.lastfmEmpty}>
-              Ninguém que você segue avaliou um álbum ainda.
-            </div>
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activityRotation}
-                className={styles.activityTicker}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-              >
-                {visibleActivity.map((item, i) => (
-                  <div key={`${item.authorUid}-${item.id}`} className={styles.tickerRow}>
-                    <Link href={`/profile/${item.authorUid}`} className={styles.tickerAvatarLink}>
-                      {item.author?.photoURL ? (
-                        <img src={item.author.photoURL} alt="" className={styles.tickerAvatar} />
-                      ) : (
-                        <div
-                          className={styles.tickerAvatar}
-                          style={{ background: `linear-gradient(150deg, ${ACTIVITY_HUES[i % ACTIVITY_HUES.length]}, #0e0c0e 130%)` }}
-                        />
-                      )}
-                    </Link>
-                    <div className={styles.tickerBody}>
-                      <div className={styles.tickerLine}>
-                        <Link href={`/profile/${item.authorUid}`} className={styles.tickerName}>
-                          {item.author?.displayName || item.author?.email || 'alguém'}
-                        </Link>
-                        <span className={styles.tickerAction}>{item.review ? 'resenhou' : 'avaliou'}</span>
-                        <Link href={`/album/${item.albumId}`} className={styles.tickerAlbum}>
-                          {item.albumTitle}
-                        </Link>
-                        <span className={styles.tickerTime}>{timeAgo(item.createdAt)}</span>
-                      </div>
-                      {item.review && <p className={styles.tickerSnippet}>"{item.review}"</p>}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          )}
-        </section>
-      )}
-
-      {/* Desenho de linha original — se traça sozinho conforme você rola.
-          Fica por último de propósito: é um fechamento visual, não deve
-          disputar atenção com busca/resultados. */}
-      {!showingSearch && (
-        <div className={styles.drawingSection}>
-          <span className={styles.drawingLabel}>traçado à mão, sem clichê de IA</span>
-          <svg
-            ref={drawingRef}
-            viewBox="0 0 400 220"
-            className={styles.drawingSvg}
-            fill="none"
-            aria-hidden="true"
-          >
-            <circle cx="130" cy="110" r="95" className={styles.drawStroke} />
-            <circle cx="130" cy="110" r="30" className={styles.drawStroke} />
-            <circle cx="130" cy="110" r="4" className={styles.drawStroke} />
-            <path d="M 320 40 L 165 100" className={styles.drawStrokeAccent} />
-            <circle cx="320" cy="40" r="12" className={styles.drawStrokeAccent} />
-            <path d="M 60 160 A 85 85 0 0 1 50 108" className={styles.drawStroke} />
-          </svg>
-        </div>
       )}
 
       <footer className={styles.footer}>

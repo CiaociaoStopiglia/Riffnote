@@ -13,6 +13,7 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { createNotification } from './notifications';
 
 const DEFAULT_TIERS = [
   { id: 'S', label: 'S', color: '#e8963c', items: [] },
@@ -80,5 +81,17 @@ export async function cloneTierListAsChallenge(sourceId, user) {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+
+  if (source.ownerId !== user.uid) {
+    createNotification(source.ownerId, {
+      type: 'tierlist_clone',
+      fromUid: user.uid,
+      fromName: user.displayName || user.email,
+      fromPhoto: user.photoURL || null,
+      tierListId: sourceId,
+      tierListTitle: source.title,
+    }).catch(() => {});
+  }
+
   return ref.id;
 }

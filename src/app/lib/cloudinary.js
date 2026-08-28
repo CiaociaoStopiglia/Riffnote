@@ -28,3 +28,35 @@ export async function uploadImage(file, folder = 'riffnote') {
 
   return data.secure_url;
 }
+
+/**
+ * Insere uma transformação de entrega (formato + qualidade automáticos) na
+ * URL do Cloudinary. Não reduz a resolução — só faz o Cloudinary escolher o
+ * formato mais eficiente (ex: WebP/AVIF quando o navegador aceita) e a
+ * melhor qualidade sem desperdiçar bytes à toa.
+ */
+export function optimizeCloudinaryUrl(url, transform = 'f_auto,q_auto:best') {
+  if (!url || !url.includes('/upload/')) return url;
+  return url.replace('/upload/', `/upload/${transform}/`);
+}
+
+/**
+ * Confere se uma imagem é "larga o bastante" pro formato do banner do
+ * perfil (bem panorâmico). Fotos estreitas/retrato precisam esticar muito
+ * pra cobrir essa faixa, e isso borra — aqui a gente avisa antes de subir.
+ */
+export function checkImageAspectRatio(file, minRatio = 2.2) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ ratio: img.width / img.height, wide: img.width / img.height >= minRatio });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve({ ratio: null, wide: true }); // não bloqueia se não conseguir medir
+    };
+    img.src = url;
+  });
+}

@@ -1,0 +1,149 @@
+/* src/app/components/NotificationBell.module.css */
+.wrap {
+  position: relative;
+}
+
+.bellBtn {
+  position: relative;
+  background: none;
+  border: none;
+  color: var(--ink-muted, #948c7b);
+  cursor: pointer;
+  padding: 8px 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.bellBtn:hover {
+  color: var(--ink, #ede6d6);
+}
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: -2px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--accent, #c9432b);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 340px;
+  max-height: 420px;
+  overflow-y: auto;
+  background: var(--bg-surface, #17151a);
+  border: 1px solid var(--line, #2a2620);
+  border-radius: 10px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  z-index: 60;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line, #2a2620);
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface, #17151a);
+}
+
+.panelTitle {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink, #ede6d6);
+}
+
+.markAllBtn {
+  background: none;
+  border: none;
+  color: var(--ink-faint, #5c564a);
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.markAllBtn:hover {
+  color: var(--ink-muted, #948c7b);
+}
+
+.empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--ink-faint, #5c564a);
+  font-size: 0.84rem;
+}
+
+.item {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--line, #2a2620);
+  cursor: pointer;
+  background: none;
+  width: 100%;
+  text-align: left;
+  border-left: 3px solid transparent;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item:hover {
+  background: var(--bg-surface-raised, #1f1c21);
+}
+
+.itemUnread {
+  border-left-color: var(--accent, #c9432b);
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--bg-surface-raised, #1f1c21);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--ink-muted, #948c7b);
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemText {
+  font-size: 0.84rem;
+  color: var(--ink, #ede6d6);
+  line-height: 1.4;
+}
+
+.itemText strong {
+  font-weight: 700;
+}
+
+.itemTime {
+  font-size: 0.7rem;
+  color: var(--ink-faint, #5c564a);
+  margin-top: 3px;
+}

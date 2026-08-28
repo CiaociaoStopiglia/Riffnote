@@ -13,6 +13,7 @@ import {
   limit as fbLimit,
 } from 'firebase/firestore';
 import { db } from './firebase';
+import { createNotification } from './notifications';
 
 /**
  * Modelo de dados no Firestore:
@@ -31,7 +32,7 @@ export async function isFollowing(currentUid, targetUid) {
   return snap.exists();
 }
 
-export async function followUser(currentUid, targetUid) {
+export async function followUser(currentUid, targetUid, currentUserProfile = {}) {
   if (currentUid === targetUid) throw new Error('Você não pode seguir a si mesmo.');
 
   const batch = writeBatch(db);
@@ -46,6 +47,13 @@ export async function followUser(currentUid, targetUid) {
   batch.update(doc(db, 'users', targetUid), { followersCount: increment(1) });
 
   await batch.commit();
+
+  createNotification(targetUid, {
+    type: 'follow',
+    fromUid: currentUid,
+    fromName: currentUserProfile.displayName || currentUserProfile.email || 'alguém',
+    fromPhoto: currentUserProfile.photoURL || null,
+  }).catch(() => {});
 }
 
 export async function unfollowUser(currentUid, targetUid) {

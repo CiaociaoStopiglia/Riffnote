@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input, Select, Spin } from 'antd';
 import toast from 'react-hot-toast';
-import { ArrowLeft, User, ShieldCheck, Lock, Save, Mail, KeyRound, Radio } from 'lucide-react';
+import { ArrowLeft, User, ShieldCheck, Lock, Save, Mail, KeyRound, Music, Radio } from 'lucide-react';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
@@ -72,6 +72,7 @@ export default function SettingsPage() {
     bio: '',
     pronoun: '',
     avatarFrame: 'none',
+    bannerStyle: 'bottom',
   });
   const [repliesPermission, setRepliesPermission] = useState('anyone');
 
@@ -113,6 +114,7 @@ export default function SettingsPage() {
             bio: data.bio || '',
             pronoun: data.pronoun || '',
             avatarFrame: data.avatarFrame || 'none',
+            bannerStyle: data.bannerStyle || 'bottom',
           });
           setRepliesPermission(data.repliesPermission || 'anyone');
         }
@@ -251,7 +253,9 @@ export default function SettingsPage() {
         <nav className={styles.nav}>
           <NavItem icon={User} label="Perfil" active={section === 'perfil'} onClick={() => setSection('perfil')} />
           <NavItem icon={ShieldCheck} label="Conta" active={section === 'conta'} onClick={() => setSection('conta')} />
-
+          <Link href="/spotify" className={styles.navItem} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Music size={16} /> Spotify
+          </Link>
           <Link href="/lastfm" className={styles.navItem} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
             <Radio size={16} /> Last.fm
           </Link>
@@ -303,6 +307,49 @@ export default function SettingsPage() {
                 <button type="button" className={styles.saveBtn} onClick={handleSaveProfile} disabled={savingProfile} style={{ marginTop: 20 }}>
                   <Save size={15} />
                   {savingProfile ? 'Salvando…' : 'Salvar moldura'}
+                </button>
+              </div>
+
+              <div className={styles.card}>
+                <div className={styles.cardTitle}>Estilo do banner</div>
+                <div className={styles.cardSub}>
+                  Como o degradê do seu banner de perfil aparece por cima da foto.
+                </div>
+
+                <div className={styles.bannerStyleGrid}>
+                  {[
+                    { id: 'bottom', label: 'Degradê de baixo' },
+                    { id: 'side', label: 'Degradê de lado' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      className={`${styles.bannerStyleOption} ${
+                        form.bannerStyle === opt.id ? styles.bannerStyleOptionActive : ''
+                      }`}
+                      onClick={() => updateField('bannerStyle', opt.id)}
+                    >
+                      <div className={styles.bannerStylePreview}>
+                        <div
+                          className={
+                            opt.id === 'side' ? styles.bannerStylePreviewSide : styles.bannerStylePreviewBottom
+                          }
+                        />
+                      </div>
+                      <span className={styles.frameLabel}>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.saveBtn}
+                  onClick={handleSaveProfile}
+                  disabled={savingProfile}
+                  style={{ marginTop: 20 }}
+                >
+                  <Save size={15} />
+                  {savingProfile ? 'Salvando…' : 'Salvar estilo do banner'}
                 </button>
               </div>
 
