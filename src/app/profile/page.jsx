@@ -19,13 +19,14 @@ import { useAuth } from '../context/AuthContext';
 import { isAdminEmail } from '../lib/admin';
 import StarRating from '../components/StarRating';
 import FavoriteAlbumsRow from '../components/FavoriteAlbumsRow';
+import { listDiscoverDecisions } from '../lib/discover';
 import AvatarFrame from '../components/AvatarFrame';
 import FollowListModal from '../components/FollowListModal';
 import styles from './page.module.css';
 
 const BIO_MAX = 280;
 const MAX_IMAGE_MB = 6;
-const TABS = ['Perfil', 'Sulco', 'Atividade', 'Listas', 'Listenlist'];
+const TABS = ['Perfil', 'Sulco', 'Atividade', 'Listas', 'Listenlist', 'Descobertas'];
 
 function timeAgo(timestamp) {
   if (!timestamp?.seconds) return '';
@@ -93,6 +94,10 @@ export default function ProfilePage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
 
   const [activeTab, setActiveTab] = useState('Perfil');
+  const [discoverLiked, setDiscoverLiked] = useState([]);
+  const [discoverSkipped, setDiscoverSkipped] = useState([]);
+  const [loadingDiscover, setLoadingDiscover] = useState(false);
+  const [discoverSubTab, setDiscoverSubTab] = useState('liked'); // 'liked' | 'skipped'
   const [followModal, setFollowModal] = useState(null); // null | 'following' | 'followers'
   const [ratedAlbums, setRatedAlbums] = useState([]);
   const [activity, setActivity] = useState([]);
@@ -166,6 +171,16 @@ export default function ProfilePage() {
       listListenlist(user.uid)
         .then(setListenlist)
         .finally(() => setLoadingListenlist(false));
+    }
+
+    if (activeTab === 'Descobertas' && discoverLiked.length === 0 && discoverSkipped.length === 0) {
+      setLoadingDiscover(true);
+      listDiscoverDecisions(user.uid)
+        .then(({ liked, skipped }) => {
+          setDiscoverLiked(liked);
+          setDiscoverSkipped(skipped);
+        })
+        .finally(() => setLoadingDiscover(false));
     }
   }, [activeTab, user]);
 
@@ -565,6 +580,13 @@ export default function ProfilePage() {
                           <div className={styles.sulcoArtist}>{item.albumArtist}</div>
                           <StarRating value={item.rating} readOnly size={12} />
                           {item.review && <p className={styles.sulcoReview}>"{item.review}"</p>}
+                          {item.tags?.length > 0 && (
+                            <div className={styles.sulcoTags}>
+                              {item.tags.map((tag) => (
+                                <span key={tag} className={styles.sulcoTagChip}>{tag}</span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -710,6 +732,79 @@ export default function ProfilePage() {
                       <div className={styles.ratedArtist}>{item.albumArtist}</div>
                     </Link>
                   </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === 'Descobertas' && (
+          <>
+            <div className={styles.discoverSubTabs}>
+              <button
+                type="button"
+                className={`${styles.discoverSubTab} ${discoverSubTab === 'liked' ? styles.discoverSubTabActive : ''}`}
+                onClick={() => setDiscoverSubTab('liked')}
+              >
+                Curtidos ({discoverLiked.length})
+              </button>
+              <button
+                type="button"
+                className={`${styles.discoverSubTab} ${discoverSubTab === 'skipped' ? styles.discoverSubTabActive : ''}`}
+                onClick={() => setDiscoverSubTab('skipped')}
+              >
+                Não curtidos ({discoverSkipped.length})
+              </button>
+              <Link href="/descobrir" className={styles.toggleLink} style={{ marginLeft: 'auto' }}>
+                ir pro Modo Descobrir
+              </Link>
+            </div>
+
+            {loadingDiscover ? (
+              <div className={styles.loadingRow}>
+                <Spin size="small" /> carregando…
+              </div>
+            ) : discoverSubTab === 'liked' ? (
+              discoverLiked.length === 0 ? (
+                <div className={styles.emptyState}>
+                  Você ainda não curtiu nada no Modo Descobrir.
+                </div>
+              ) : (
+                <div className={styles.ratedGrid}>
+                  {discoverLiked.map((item) => (
+                    <Link key={item.albumId} href={`/album/${item.albumId}`} className={styles.ratedCard}>
+                      {item.artwork ? (
+                        <img src={item.artwork} alt={item.albumTitle} className={styles.ratedCover} />
+                      ) : (
+                        <div className={styles.ratedCover} />
+                      )}
+                      <div className={styles.ratedTitle}>{item.albumTitle}</div>
+                      <div className={styles.ratedArtist}>{item.albumArtist}</div>
+                    </Link>
+                  ))}
+                </div>
+              )
+            ) : discoverSkipped.length === 0 ? (
+              <div className={styles.emptyState}>
+                Você ainda não pulou nada no Modo Descobrir.
+              </div>
+            ) : (
+              <div className={styles.ratedGrid}>
+                {discoverSkipped.map((item) => (
+                  <Link
+                    key={item.albumId}
+                    href={`/album/${item.albumId}`}
+                    className={styles.ratedCard}
+                    style={{ opacity: 0.55 }}
+                  >
+                    {item.artwork ? (
+                      <img src={item.artwork} alt={item.albumTitle} className={styles.ratedCover} />
+                    ) : (
+                      <div className={styles.ratedCover} />
+                    )}
+                    <div className={styles.ratedTitle}>{item.albumTitle}</div>
+                    <div className={styles.ratedArtist}>{item.albumArtist}</div>
+                  </Link>
                 ))}
               </div>
             )}

@@ -26,14 +26,26 @@ import { logActivity } from './activity';
 
 export async function getUserTrackRatingsForAlbum(uid, albumId) {
   if (!uid) return {};
-  const q = query(
-    collection(db, 'users', uid, 'trackRatings'),
-    where('albumId', '==', String(albumId))
-  );
-  const snap = await getDocs(q);
+
+  // Busca nos dois formatos: notas salvas depois da correção usam texto,
+  // mas notas salvas antes (com o bug de tipo) ficaram gravadas como
+  // número — sem isso, elas ficariam "perdidas" pra sempre na busca.
+  const numericId = Number(albumId);
+  const queries = [
+    query(collection(db, 'users', uid, 'trackRatings'), where('albumId', '==', String(albumId))),
+  ];
+  if (!Number.isNaN(numericId)) {
+    queries.push(
+      query(collection(db, 'users', uid, 'trackRatings'), where('albumId', '==', numericId))
+    );
+  }
+
+  const snaps = await Promise.all(queries.map((q) => getDocs(q)));
   const map = {};
-  snap.docs.forEach((d) => {
-    map[d.id] = d.data();
+  snaps.forEach((snap) => {
+    snap.docs.forEach((d) => {
+      map[d.id] = d.data();
+    });
   });
   return map;
 }
@@ -61,7 +73,7 @@ export async function rateTrack(uid, track, album, rating) {
         trackId: track.id,
         trackTitle: track.title,
         trackNumber: track.number || null,
-        albumId: album.id,
+        albumId: String(album.id),
         albumTitle: album.title,
         albumArtist: album.artist,
         artwork: album.artwork || null,

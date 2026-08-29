@@ -3,6 +3,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  updateDoc,
   collection,
   query,
   orderBy,
@@ -25,6 +26,18 @@ export async function getUserRating(uid, albumId) {
   if (!uid) return null;
   const snap = await getDoc(doc(db, 'users', uid, 'ratings', String(albumId)));
   return snap.exists() ? snap.data() : null;
+}
+
+/**
+ * Tags livres numa avaliação já existente (ex: "clássico pessoal",
+ * "nostalgia", "descoberta recente"). Só funciona em cima de um álbum que
+ * a pessoa já avaliou — tag sem nota não faz muito sentido no modelo atual.
+ */
+export async function updateAlbumTags(uid, albumId, tags) {
+  await updateDoc(doc(db, 'users', uid, 'ratings', String(albumId)), {
+    tags,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 /**

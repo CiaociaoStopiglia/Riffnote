@@ -404,6 +404,7 @@ export default function Home() {
           <Link href="/usuarios">Pessoas</Link>
           <Link href="/comunidade">Comunidade</Link>
           <Link href="/noticias">Notícias</Link>
+          <Link href="/descobrir">Descobrir</Link>
         </nav>
         <button
           type="button"
@@ -470,6 +471,7 @@ export default function Home() {
             <Link href="/usuarios" onClick={() => setMobileMenuOpen(false)}>Pessoas</Link>
             <Link href="/comunidade" onClick={() => setMobileMenuOpen(false)}>Comunidade</Link>
             <Link href="/noticias" onClick={() => setMobileMenuOpen(false)}>Notícias</Link>
+            <Link href="/descobrir" onClick={() => setMobileMenuOpen(false)}>Descobrir</Link>
           </motion.nav>
         )}
       </AnimatePresence>

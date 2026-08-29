@@ -399,6 +399,13 @@ export default function PublicProfilePage() {
                           <div className={styles.sulcoArtist}>{item.albumArtist}</div>
                           <StarRating value={item.rating} readOnly size={12} />
                           {item.review && <p className={styles.sulcoReview}>"{item.review}"</p>}
+                          {item.tags?.length > 0 && (
+                            <div className={styles.sulcoTags}>
+                              {item.tags.map((tag) => (
+                                <span key={tag} className={styles.sulcoTagChip}>{tag}</span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}

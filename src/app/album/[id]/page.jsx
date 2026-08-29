@@ -6,9 +6,10 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Spin, Input } from 'antd';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Play, Trash2, Bookmark, BookmarkCheck, ListPlus, Plus, Check } from 'lucide-react';
+import { ArrowLeft, Play, Trash2, Bookmark, BookmarkCheck, ListPlus, Plus, Check, Share2, X } from 'lucide-react';
 import { fetchAlbumFull } from '../../lib/musicApi';
-import { getUserRating, rateAlbum, removeRating, getAlbumStats } from '../../lib/ratings';
+import { getUserRating, rateAlbum, removeRating, getAlbumStats, updateAlbumTags } from '../../lib/ratings';
+import { shareStoryImage } from '../../lib/shareStory';
 import {
   getUserTrackRatingsForAlbum,
   rateTrack,
@@ -38,6 +39,8 @@ export default function AlbumPage() {
 
   const [myRating, setMyRating] = useState(0);
   const [myReview, setMyReview] = useState('');
+  const [myTags, setMyTags] = useState([]);
+  const [newTag, setNewTag] = useState('');
   const [savingRating, setSavingRating] = useState(false);
   const [hasRating, setHasRating] = useState(false);
   const [communityStats, setCommunityStats] = useState(null); // { average, count }
@@ -87,18 +90,24 @@ export default function AlbumPage() {
       if (data) {
         setMyRating(data.rating);
         setMyReview(data.review || '');
+        setMyTags(data.tags || []);
         setHasRating(true);
       }
     });
     isInListenlist(user.uid, id).then(setInListenlist);
 
-    getUserTrackRatingsForAlbum(user.uid, id).then((map) => {
-      const ratingsOnly = {};
-      Object.entries(map).forEach(([trackId, data]) => {
-        ratingsOnly[trackId] = data.rating;
+    getUserTrackRatingsForAlbum(user.uid, id)
+      .then((map) => {
+        const ratingsOnly = {};
+        Object.entries(map).forEach(([trackId, data]) => {
+          ratingsOnly[trackId] = data.rating;
+        });
+        setTrackRatings(ratingsOnly);
+      })
+      .catch((err) => {
+        console.error('Erro ao buscar avaliações de faixa:', err);
+        toast.error('Não consegui carregar suas notas de faixa salvas anteriormente.');
       });
-      setTrackRatings(ratingsOnly);
-    });
   }, [user, id]);
 
   async function handleRateTrack(track, value) {
@@ -160,6 +169,39 @@ export default function AlbumPage() {
     }
   }
 
+  async function handleAddTag() {
+    const clean = newTag.trim();
+    if (!clean) return;
+    if (myTags.includes(clean)) {
+      setNewTag('');
+      return;
+    }
+    if (myTags.length >= 6) {
+      toast.error('Máximo de 6 tags por álbum.');
+      return;
+    }
+    const next = [...myTags, clean];
+    setMyTags(next);
+    setNewTag('');
+    try {
+      await updateAlbumTags(user.uid, id, next);
+    } catch (err) {
+      setMyTags(myTags);
+      toast.error('Não consegui salvar essa tag.');
+    }
+  }
+
+  async function handleRemoveTag(tag) {
+    const next = myTags.filter((t) => t !== tag);
+    setMyTags(next);
+    try {
+      await updateAlbumTags(user.uid, id, next);
+    } catch (err) {
+      setMyTags(myTags);
+      toast.error('Não consegui remover essa tag.');
+    }
+  }
+
   async function handleRemoveRating() {
     if (!user) return;
     setSavingRating(true);
@@ -192,6 +234,28 @@ export default function AlbumPage() {
       toast.error('Não consegui atualizar sua Listenlist.');
     } finally {
       setListenlistBusy(false);
+    }
+  }
+
+  const [sharing, setSharing] = useState(false);
+
+  async function handleShare() {
+    if (!album || myRating === 0) {
+      toast.error('Dá uma nota antes de compartilhar.');
+      return;
+    }
+    setSharing(true);
+    try {
+      const result = await shareStoryImage(album, myRating, myReview);
+      if (result === 'downloaded') {
+        toast.success('Imagem baixada! Agora é só subir nos seus Stories.');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        toast.error('Não consegui gerar a imagem de compartilhamento.');
+      }
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -339,6 +403,13 @@ export default function AlbumPage() {
                   {inListenlist ? 'Na Listenlist' : 'Quero ouvir'}
                 </button>
 
+                {myRating > 0 && (
+                  <button type="button" className={styles.actionBtn} onClick={handleShare} disabled={sharing}>
+                    <Share2 size={15} />
+                    {sharing ? 'Gerando…' : 'Compartilhar'}
+                  </button>
+                )}
+
                 <div className={styles.listsWrap}>
                   <button type="button" className={styles.actionBtn} onClick={openListsPanel}>
                     <ListPlus size={15} /> Adicionar a uma lista
@@ -409,6 +480,34 @@ export default function AlbumPage() {
                 >
                   Salvar resenha
                 </button>
+              </div>
+
+              <div className={styles.tagsBlock}>
+                <label className={styles.reviewLabel}>Suas tags</label>
+                <div className={styles.tagsRow}>
+                  {myTags.map((tag) => (
+                    <span key={tag} className={styles.tagChip}>
+                      {tag}
+                      <button type="button" onClick={() => handleRemoveTag(tag)} aria-label={`Remover tag ${tag}`}>
+                        <X size={11} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                {myTags.length < 6 && (
+                  <div className={styles.tagInputRow}>
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onPressEnter={handleAddTag}
+                      placeholder="ex: clássico pessoal, nostalgia…"
+                      maxLength={24}
+                    />
+                    <button type="button" className={styles.tagAddBtn} onClick={handleAddTag}>
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             </>
           ) : (
