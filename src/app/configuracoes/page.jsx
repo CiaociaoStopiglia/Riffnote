@@ -299,7 +299,7 @@ export default function SettingsPage() {
                           </div>
                         </AvatarFrame>
                       </div>
-                      <div className={styles.frameLabelRow}>
+                      <div className={styles.frameLabelStack}>
                         <span className={styles.frameLabel}>{f.label}</span>
                         {f.isNew && <span className={styles.frameBadge}>novo</span>}
                       </div>
