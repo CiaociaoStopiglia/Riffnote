@@ -190,10 +190,38 @@
   object-fit: cover;
 }
  
+.frameLabelRow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 18px;
+  white-space: nowrap;
+  line-height: 1;
+}
+
 .frameLabel {
   font-size: 0.72rem;
   color: var(--ink-muted);
   text-align: center;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.frameBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #9bf7bf, #2fe28a);
+  color: #071c12;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 0 12px rgba(47, 226, 138, 0.35);
 }
  
 .bannerStyleGrid {

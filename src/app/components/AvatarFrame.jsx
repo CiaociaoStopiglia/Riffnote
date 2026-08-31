@@ -11,6 +11,13 @@ export const AVATAR_FRAMES = [
   { id: 'ring-vinyl', label: 'Vinil girando' },
   { id: 'ring-sparkle', label: 'Constelação' },
   { id: 'ring-neon', label: 'Néon' },
+  { id: 'ring-ice', label: 'Gelo', isNew: true },
+  { id: 'ring-volcano', label: 'Vulcão', isNew: true },
+  { id: 'ring-forest', label: 'Floresta', isNew: true },
+  { id: 'ring-aurora', label: 'Aurora', isNew: true },
+  { id: 'ring-solar', label: 'Solar', isNew: true },
+  { id: 'ring-spider', label: 'Aracnídeo', isNew: true },
+  { id: 'ring-candy', label: 'Candy', isNew: true },
 ];
 
 /**
