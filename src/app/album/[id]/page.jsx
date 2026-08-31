@@ -1,12 +1,12 @@
 // src/app/album/[id]/page.jsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Spin, Input } from 'antd';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Play, Trash2, Bookmark, BookmarkCheck, ListPlus, Plus, Check, Share2, X } from 'lucide-react';
+import { ArrowLeft, Play, Pause, Trash2, Bookmark, BookmarkCheck, ListPlus, Plus, Check, Share2, X } from 'lucide-react';
 import { fetchAlbumFull } from '../../lib/musicApi';
 import { getUserRating, rateAlbum, removeRating, getAlbumStats, updateAlbumTags } from '../../lib/ratings';
 import { shareStoryImage } from '../../lib/shareStory';
@@ -40,6 +40,8 @@ export default function AlbumPage() {
   const [myRating, setMyRating] = useState(0);
   const [myReview, setMyReview] = useState('');
   const [myTags, setMyTags] = useState([]);
+  const [playingTrackId, setPlayingTrackId] = useState(null);
+  const previewAudioRef = useRef(null);
   const [newTag, setNewTag] = useState('');
   const [savingRating, setSavingRating] = useState(false);
   const [hasRating, setHasRating] = useState(false);
@@ -167,6 +169,21 @@ export default function AlbumPage() {
     } finally {
       setSavingRating(false);
     }
+  }
+
+  function handleTogglePreview(track) {
+    const audio = previewAudioRef.current;
+    if (!audio) return;
+
+    if (playingTrackId === track.id) {
+      audio.pause();
+      setPlayingTrackId(null);
+      return;
+    }
+
+    audio.src = track.previewUrl;
+    audio.play();
+    setPlayingTrackId(track.id);
   }
 
   async function handleAddTag() {
@@ -533,7 +550,14 @@ export default function AlbumPage() {
                   <span className={styles.trackTitle}>{track.title}</span>
                   <span className={styles.trackDuration}>{formatDuration(track.durationMs)}</span>
                   {track.previewUrl ? (
-                    <audio controls src={track.previewUrl} className={styles.trackAudio} />
+                    <button
+                      type="button"
+                      className={styles.previewBtn}
+                      onClick={() => handleTogglePreview(track)}
+                      aria-label={playingTrackId === track.id ? 'Pausar prévia' : 'Tocar prévia'}
+                    >
+                      {playingTrackId === track.id ? <Pause size={14} /> : <Play size={14} />}
+                    </button>
                   ) : (
                     <span className={styles.trackNoPreview}>sem prévia</span>
                   )}
@@ -563,8 +587,13 @@ export default function AlbumPage() {
         </div>
         <p className={styles.hint}>
           <Play size={11} style={{ display: 'inline', verticalAlign: '-2px', marginRight: 4 }} />
-          prévias de 30s fornecidas pela Apple/iTunes
+          prévias de 30s cedidas cortesia da Apple/iTunes
         </p>
+        <audio
+          ref={previewAudioRef}
+          onEnded={() => setPlayingTrackId(null)}
+          style={{ display: 'none' }}
+        />
       </div>
     </div>
   );
