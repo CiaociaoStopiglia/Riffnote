@@ -184,12 +184,47 @@
 .nameBlock {
   padding-top: 0;
 }
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
  
 .displayName {
   font-family: 'Inter', sans-serif;
   font-weight: 800;
   font-size: 1.5rem;
   letter-spacing: -0.02em;
+}
+
+.profileBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.profileBadgeAdmin {
+  background: linear-gradient(135deg, rgba(255, 214, 102, 0.24), rgba(255, 163, 26, 0.18));
+  border: 1px solid rgba(255, 214, 102, 0.55);
+  color: #ffd76a;
+  box-shadow: 0 0 10px rgba(255, 184, 77, 0.2);
+}
+
+.profileBadgeMember {
+  background: linear-gradient(135deg, rgba(146, 255, 196, 0.2), rgba(35, 209, 135, 0.14));
+  border: 1px solid rgba(122, 255, 187, 0.5);
+  color: #a8ffd0;
+  box-shadow: 0 0 10px rgba(44, 225, 146, 0.18);
 }
  
 .handle {

@@ -15,7 +15,7 @@ import { listActivity } from '../../lib/activity';
 import { listUserLists } from '../../lib/lists';
 import { listListenlist } from '../../lib/listenlist';
 import { useAuth } from '../../context/AuthContext';
-import { isAdminEmail } from '../../lib/admin';
+import { getProfileBadge, isAdminEmail } from '../../lib/admin';
 import StarRating from '../../components/StarRating';
 import { optimizeCloudinaryUrl } from '../../lib/cloudinary';
 import FavoriteAlbumsRow from '../../components/FavoriteAlbumsRow';
@@ -70,6 +70,7 @@ export default function PublicProfilePage() {
   const { user: currentUser, loadingUser } = useAuth();
 
   const [profile, setProfile] = useState(null);
+  const profileBadge = getProfileBadge(profile?.email);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [following, setFollowing] = useState(false);
   const [followBusy, setFollowBusy] = useState(false);
@@ -220,7 +221,14 @@ export default function PublicProfilePage() {
 
       <div className={styles.headerBar}>
         <div className={styles.nameBlock}>
-          <div className={styles.displayName}>{profile.displayName || 'Sem nome'}</div>
+          <div className={styles.nameRow}>
+            <div className={styles.displayName}>{profile.displayName || 'Sem nome'}</div>
+            {profileBadge && (
+              <span className={`${styles.profileBadge} ${profileBadge === 'ADM' ? styles.profileBadgeAdmin : styles.profileBadgeMember}`}>
+                {profileBadge}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className={styles.statsBar}>

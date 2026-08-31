@@ -16,7 +16,7 @@ import { listActivity } from '../lib/activity';
 import { listListenlist, removeFromListenlist } from '../lib/listenlist';
 import { listUserLists, createList } from '../lib/lists';
 import { useAuth } from '../context/AuthContext';
-import { isAdminEmail } from '../lib/admin';
+import { getProfileBadge, isAdminEmail } from '../lib/admin';
 import StarRating from '../components/StarRating';
 import FavoriteAlbumsRow from '../components/FavoriteAlbumsRow';
 import { listDiscoverDecisions } from '../lib/discover';
@@ -87,6 +87,7 @@ export default function ProfilePage() {
     avatarFrame: 'none',
     favoriteAlbums: [],
   });
+  const profileBadge = getProfileBadge(user?.email);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [editingBio, setEditingBio] = useState(false);
   const [savingBio, setSavingBio] = useState(false);
@@ -368,7 +369,10 @@ export default function ProfilePage() {
 
       <div className={styles.headerBar}>
         <div className={styles.nameBlock}>
-          <div className={styles.displayName}>{user.displayName || 'Sem nome'}</div>
+          <div className={styles.nameRow}>
+            <div className={styles.displayName}>{user.displayName || 'Sem nome'}</div>
+            {profileBadge && <span className={`${styles.profileBadge} ${profileBadge === 'ADM' ? styles.profileBadgeAdmin : styles.profileBadgeMember}`}>{profileBadge}</span>}
+          </div>
           <div className={styles.handle}>{user.email}</div>
         </div>
 
