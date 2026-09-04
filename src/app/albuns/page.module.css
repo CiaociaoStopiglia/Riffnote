@@ -45,6 +45,99 @@
   padding: 0 32px;
 }
 
+.pageTitle {
+  font-weight: 800;
+  font-size: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.pageSub {
+  color: var(--ink-muted);
+  font-size: 0.92rem;
+  margin-top: 6px;
+}
+
+/* ---------- Barra de filtros avançados ---------- */
+
+.filtersBar {
+  max-width: 1180px;
+  margin: 24px auto 0;
+  padding: 16px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.searchInputAdv {
+  flex: 1;
+  min-width: 200px;
+}
+
+.searchInputAdv input,
+.searchInputAdv :global(.ant-input) {
+  background: var(--bg-void) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.selectAdv {
+  min-width: 140px;
+}
+
+.selectAdv :global(.ant-select-selector) {
+  background: var(--bg-void) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--ink) !important;
+}
+
+.applyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  padding: 0 18px;
+  height: 40px;
+  color: #170905;
+  font-weight: 700;
+  font-size: 0.84rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.applyBtn:hover {
+  background: var(--accent-soft);
+}
+
+.applyBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.clearAdvBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 14px;
+  height: 40px;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.clearAdvBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent-soft);
+}
+
 .searchWrap {
   max-width: 1180px;
   margin: 24px auto 0;
@@ -88,18 +181,6 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-}
-
-.pageTitle {
-  font-weight: 800;
-  font-size: 2rem;
-  letter-spacing: -0.02em;
-}
-
-.pageSub {
-  color: var(--ink-muted);
-  font-size: 0.92rem;
-  margin-top: 6px;
 }
 
 .section {
@@ -162,6 +243,11 @@
   .pageHeader,
   .section {
     padding: 0 20px;
+  }
+
+  .filtersBar {
+    margin-left: 20px;
+    margin-right: 20px;
   }
 
   .backLink {
