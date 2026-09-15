@@ -22,75 +22,11 @@ import {
     searchTracks,
     searchArtistDiscography,
 } from '../lib/musicApi';
-import { listTopRatedAlbums, getAlbumStats } from '../lib/ratings';
+import { listTopRatedAlbums } from '../lib/ratings';
 import { searchDiscogsAlbums, DECADES, GENRES, STYLES, COUNTRIES } from '../lib/discogs';
 import AlbumCard from '../components/AlbumCard';
 import TrackResultRow from '../components/TrackResultRow';
 import styles from './page.module.css';
-
-// Gênero/década/ordenação dos filtros avançados (pool iTunes + nota da
-// comunidade Riffnote) — vocabulário próprio, diferente do vocabulário
-// oficial da Discogs usado no "Explorar por filtro" (GENRES/DECADES acima).
-const ADV_GENRES = [
-    'Rock',
-    'Pop',
-    'Hip-Hop/Rap',
-    'R&B/Soul',
-    'Alternative',
-    'Electronic',
-    'Jazz',
-    'Classical',
-    'Country',
-    'Latin',
-    'Metal',
-    'Reggae',
-    'Folk',
-    'Blues',
-    'Singer/Songwriter',
-    'World',
-];
-
-const ADV_DECADES = [
-    { value: '2020', label: '2020s' },
-    { value: '2010', label: '2010s' },
-    { value: '2000', label: '2000s' },
-    { value: '1990', label: '1990s' },
-    { value: '1980', label: '1980s' },
-    { value: '1970', label: '1970s' },
-    { value: '1960', label: 'Antes de 1970' },
-];
-
-const SORT_OPTIONS = [
-    { value: 'relevancia', label: 'Relevância' },
-    { value: 'nota', label: 'Nota da comunidade' },
-    { value: 'avaliados', label: 'Mais avaliados' },
-    { value: 'ano', label: 'Ano (mais recente)' },
-    { value: 'az', label: 'A-Z' },
-];
-
-// Charts de países diferentes têm catálogos bem diferentes — combinamos
-// alguns pra ter um "pool" real de onde filtrar por gênero/década, em vez
-// de usar o nome do gênero como se fosse um termo de busca (isso não
-// funciona: o iTunes trata "Rock" como texto livre, não como filtro).
-const POOL_COUNTRIES = ['us', 'gb', 'br'];
-
-function getYear(releaseDate) {
-    if (!releaseDate) return null;
-    const year = new Date(releaseDate).getFullYear();
-    return Number.isNaN(year) ? null : year;
-}
-
-function dedupe(albums) {
-    const seen = new Set();
-    const result = [];
-    for (const a of albums) {
-        const id = String(a.id);
-        if (seen.has(id)) continue;
-        seen.add(id);
-        result.push(a);
-    }
-    return result;
-}
 
 export default function AlbunsPage() {
     const router = useRouter();
@@ -271,15 +207,6 @@ export default function AlbunsPage() {
         }
     }
 
-    // --- filtros avançados (pool iTunes + nota da comunidade Riffnote) ---
-    const [advQuery, setAdvQuery] = useState('');
-    const [advGenre, setAdvGenre] = useState(null);
-    const [advDecade, setAdvDecade] = useState(null);
-    const [sortBy, setSortBy] = useState('relevancia');
-
-    const [advFilteredResults, setAdvFilteredResults] = useState(null); // null = modo padrão (sem filtro ativo)
-    const [advFiltering, setAdvFiltering] = useState(false);
-
     useEffect(() => {
         fetchNewReleases({ limit: 12 })
             .then(setNewReleases)
@@ -296,117 +223,6 @@ export default function AlbunsPage() {
             .catch(() => {})
             .finally(() => setLoadingTopRated(false));
     }, []);
-
-    function sortResults(list, by) {
-        const copy = [...list];
-        if (by === 'nota') return copy.sort((a, b) => b.communityAvg - a.communityAvg);
-        if (by === 'avaliados') return copy.sort((a, b) => b.communityCount - a.communityCount);
-        if (by === 'ano')
-            return copy.sort(
-                (a, b) => (getYear(b.releaseDate) || 0) - (getYear(a.releaseDate) || 0),
-            );
-        if (by === 'az') return copy.sort((a, b) => a.title.localeCompare(b.title));
-        return copy;
-    }
-
-    async function handleApplyAdvFilters() {
-        const term = advQuery.trim();
-
-        if (!term && !advGenre && !advDecade) {
-            toast.error('Digite algo, ou escolhe pelo menos um filtro (gênero/década).');
-            return;
-        }
-
-        setAdvFiltering(true);
-        try {
-            // monta o pool: charts de alguns países + lançamentos recentes,
-            // que já vêm com gênero/data reais — mais buscas do termo digitado,
-            // se houver, pra pegar coisas fora do top das paradas também.
-            const poolPromises = [
-                ...POOL_COUNTRIES.map((country) =>
-                    fetchTopAlbums({ country, limit: 100 }).catch(() => []),
-                ),
-                fetchNewReleases({ limit: 100 }).catch(() => []),
-            ];
-            if (term) {
-                poolPromises.push(searchAlbums(term, { limit: 48 }).catch(() => []));
-            }
-
-            const poolResults = await Promise.all(poolPromises);
-            let pool = dedupe(poolResults.flat());
-
-            // filtro de termo — aplicado no pool inteiro, não só nos resultados
-            // da busca, pra pegar também o que vier dos charts.
-            if (term) {
-                const lower = term.toLowerCase();
-                pool = pool.filter(
-                    (a) =>
-                        a.title.toLowerCase().includes(lower) ||
-                        a.artist.toLowerCase().includes(lower),
-                );
-            }
-
-            // filtro de gênero — usando o campo genre real, não mais "gênero
-            // como termo de busca" (isso não funcionava de verdade).
-            if (advGenre) {
-                pool = pool.filter(
-                    (a) => a.genre && a.genre.toLowerCase().includes(advGenre.toLowerCase()),
-                );
-            }
-
-            // filtro de década
-            if (advDecade) {
-                const start = Number(advDecade);
-                pool = pool.filter((a) => {
-                    const year = getYear(a.releaseDate);
-                    if (!year) return false;
-                    return advDecade === '1960' ? year < 1970 : year >= start && year < start + 10;
-                });
-            }
-
-            if (pool.length === 0) {
-                toast('Nada encontrado com esses filtros. Tenta ajustar.');
-                setAdvFilteredResults([]);
-                return;
-            }
-
-            // limita antes de buscar a média da comunidade, pra não estourar
-            // leitura do Firestore à toa
-            const capped = pool.slice(0, 60);
-
-            const withStats = await Promise.all(
-                capped.map(async (a) => {
-                    const stats = await getAlbumStats(a.id).catch(() => null);
-                    return {
-                        ...a,
-                        communityAvg: stats?.average || 0,
-                        communityCount: stats?.count || 0,
-                    };
-                }),
-            );
-
-            setAdvFilteredResults(sortResults(withStats, sortBy));
-        } catch (err) {
-            toast.error('Não consegui aplicar os filtros agora. Tenta de novo.');
-        } finally {
-            setAdvFiltering(false);
-        }
-    }
-
-    function handleSortChange(value) {
-        setSortBy(value);
-        if (advFilteredResults) setAdvFilteredResults((prev) => sortResults(prev, value));
-    }
-
-    function clearAdvFilters() {
-        setAdvQuery('');
-        setAdvGenre(null);
-        setAdvDecade(null);
-        setSortBy('relevancia');
-        setAdvFilteredResults(null);
-    }
-
-    const showingAdvFilters = advFilteredResults !== null;
 
     async function handleSearch() {
         const term = query.trim();
@@ -577,84 +393,7 @@ export default function AlbunsPage() {
                 )}
             </section>
 
-            <div className={styles.filtersBar}>
-                <Input
-                    className={styles.searchInputAdv}
-                    size="large"
-                    placeholder="Nome do álbum ou artista (opcional)…"
-                    prefix={<Search size={16} color="#6f6860" />}
-                    value={advQuery}
-                    onChange={(e) => setAdvQuery(e.target.value)}
-                    onPressEnter={handleApplyAdvFilters}
-                />
-                <Select
-                    className={styles.selectAdv}
-                    size="large"
-                    placeholder="Gênero"
-                    allowClear
-                    value={advGenre}
-                    onChange={setAdvGenre}
-                    options={ADV_GENRES.map((g) => ({ value: g, label: g }))}
-                />
-                <Select
-                    className={styles.selectAdv}
-                    size="large"
-                    placeholder="Década"
-                    allowClear
-                    value={advDecade}
-                    onChange={setAdvDecade}
-                    options={ADV_DECADES}
-                />
-                <Select
-                    className={styles.selectAdv}
-                    size="large"
-                    value={sortBy}
-                    onChange={handleSortChange}
-                    options={SORT_OPTIONS}
-                />
-                <button
-                    type="button"
-                    className={styles.applyBtn}
-                    onClick={handleApplyAdvFilters}
-                    disabled={advFiltering}>
-                    <SlidersHorizontal size={15} />
-                    {advFiltering ? 'Filtrando…' : 'Aplicar filtros'}
-                </button>
-                {showingAdvFilters && (
-                    <button type="button" className={styles.clearAdvBtn} onClick={clearAdvFilters}>
-                        <X size={14} /> limpar
-                    </button>
-                )}
-            </div>
-
-            {showingAdvFilters ? (
-                <section className={styles.section}>
-                    <div className={styles.sectionHead}>
-                        <h2 className={styles.sectionTitle}>Resultados filtrados</h2>
-                        <span className={styles.sectionNote}>{advFilteredResults.length} álbuns</span>
-                    </div>
-
-                    {advFiltering ? (
-                        <div className={styles.loadingRow}>
-                            <Spin /> <span>aplicando filtros…</span>
-                        </div>
-                    ) : advFilteredResults.length === 0 ? (
-                        <div className={styles.emptyState}>
-                            Nada encontrado com esses filtros. Tenta ajustar.
-                        </div>
-                    ) : (
-                        <div className={styles.grid}>
-                            {advFilteredResults.map((album) => (
-                                <AlbumCard
-                                    key={album.id}
-                                    album={album}
-                                    average={album.communityAvg || undefined}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </section>
-            ) : showingSearch ? (
+            {showingSearch ? (
                 <section className={styles.section}>
                     <div className={styles.sectionHead}>
                         <h2 className={styles.sectionTitle}>Resultados para "{query}"</h2>
