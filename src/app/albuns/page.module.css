@@ -221,6 +221,79 @@
   gap: 22px;
 }
 
+.exploreFiltersBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.sectionLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.sectionLink:hover {
+  color: var(--accent-soft);
+}
+
+.filterSelect {
+  width: 180px;
+}
+
+.filterSelect :global(.ant-select-selector) {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  padding: 4px 16px !important;
+  height: auto !important;
+}
+
+.filterSearchInput {
+  flex: 1;
+  min-width: 220px;
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 999px !important;
+  padding: 6px 16px !important;
+}
+
+.filterSearchInput :global(.ant-input) {
+  background: transparent;
+  color: var(--ink);
+}
+
+.loadMoreRow {
+  display: flex;
+  justify-content: center;
+  margin-top: 28px;
+}
+
+.loadMoreBtn {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 10px 24px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.loadMoreBtn:hover {
+  border-color: var(--accent);
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
 .loadingRow {
   display: flex;
   align-items: center;

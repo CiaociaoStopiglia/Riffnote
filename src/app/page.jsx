@@ -390,6 +390,63 @@ export default function Home() {
     };
   }, [showingSearch]);
 
+  // Extraído numa variável porque precisa aparecer em dois lugares possíveis:
+  // logo abaixo do Hero quando tem busca ativa, ou no lugar de sempre
+  // ("Em alta essa semana") quando não tem — nunca os dois ao mesmo tempo.
+  const resultsSection = (
+    <section className={styles.section} data-reveal-section>
+      <div className={styles.sectionHead}>
+        <div>
+          <span className={styles.sectionEyebrow}>{showingSearch ? 'busca' : 'chart Apple Music'}</span>
+          <h2 className={styles.sectionTitle} data-split-title>
+            {showingSearch ? `"${query}"` : 'Em alta essa semana'}
+          </h2>
+        </div>
+        {showingSearch ? (
+          <button type="button" className={styles.sectionLink} onClick={clearSearch}>
+            limpar <X size={13} />
+          </button>
+        ) : (
+          <Link href="/albuns" className={styles.sectionLink}>
+            ver todos os álbuns
+          </Link>
+        )}
+      </div>
+
+      {loadingTrending && !showingSearch ? (
+        <div className={styles.loadingRow}>
+          <Spin /> <span>carregando o chart…</span>
+        </div>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={showingSearch ? `search-${query}` : 'trending'}
+            className={styles.albumGrid}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          >
+            {(showingSearch ? searchResults : trendingAlbums.slice(0, 6)).map((album) => (
+              <AlbumCard key={album.id} album={album} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      {showingSearch && trackResults.length > 0 && (
+        <div className={styles.trackResultsBlock}>
+          <span className={styles.trackResultsLabel}>Músicas</span>
+          <div className={styles.trackResultsList}>
+            {trackResults.map((track) => (
+              <TrackResultRow key={track.trackId} track={track} />
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+
   return (
     <div className={styles.page} ref={pageRef}>
       {/* Navbar */}
@@ -516,6 +573,10 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Resultados de busca aparecem logo abaixo do Hero — antes de qualquer
+          feed (Last.fm, atividade de amigos), senão fica escondido lá embaixo */}
+      {showingSearch && resultsSection}
 
       {/* O que você andou ouvindo (Last.fm) — sozinha, largura toda */}
       {user && lastfmUsername && (
@@ -652,58 +713,8 @@ export default function Home() {
         )}
       </section>
 
-      {/* Em alta / Resultados de busca */}
-      <section className={styles.section} data-reveal-section>
-        <div className={styles.sectionHead}>
-          <div>
-            <span className={styles.sectionEyebrow}>{showingSearch ? 'busca' : 'chart Apple Music'}</span>
-            <h2 className={styles.sectionTitle} data-split-title>
-              {showingSearch ? `"${query}"` : 'Em alta essa semana'}
-            </h2>
-          </div>
-          {showingSearch ? (
-            <button type="button" className={styles.sectionLink} onClick={clearSearch}>
-              limpar <X size={13} />
-            </button>
-          ) : (
-            <Link href="/albuns" className={styles.sectionLink}>
-              ver todos os álbuns
-            </Link>
-          )}
-        </div>
-
-        {loadingTrending && !showingSearch ? (
-          <div className={styles.loadingRow}>
-            <Spin /> <span>carregando o chart…</span>
-          </div>
-        ) : (
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={showingSearch ? `search-${query}` : 'trending'}
-              className={styles.albumGrid}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-            >
-              {(showingSearch ? searchResults : trendingAlbums.slice(0, 6)).map((album) => (
-                <AlbumCard key={album.id} album={album} />
-              ))}
-            </motion.div>
-          </AnimatePresence>
-        )}
-
-        {showingSearch && trackResults.length > 0 && (
-          <div className={styles.trackResultsBlock}>
-            <span className={styles.trackResultsLabel}>Músicas</span>
-            <div className={styles.trackResultsList}>
-              {trackResults.map((track) => (
-                <TrackResultRow key={track.trackId} track={track} />
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
+      {/* Em alta / Resultados de busca — no lugar original, só quando não tem busca ativa */}
+      {!showingSearch && resultsSection}
 
       {/* Artistas */}
       {!showingSearch && (

@@ -8,4 +8,8 @@ html,
 body {
     margin: 0;
     padding: 0;
+    /* Sem isso, o fundo do body fica branco (padrão do navegador) até a
+       página montar e pintar seu próprio fundo escuro — dá um flash branco
+       nítido a cada troca de rota. Mesmo tom de --bg-void usado nas páginas. */
+    background: #0b0a0d;
 }

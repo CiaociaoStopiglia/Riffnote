@@ -261,3 +261,18 @@ export function extractTopArtists(albums, limit = 6) {
 
     return Array.from(seen.values()).slice(0, limit);
 }
+
+/**
+ * Busca "modo enciclopédia": se o termo bater com um artista, traz a
+ * discografia COMPLETA dele via lookup por artistId — não fica refém do
+ * limite/relevância da busca livre por álbum (que corta o catálogo e pode
+ * nem trazer o artista certo entre os primeiros resultados).
+ */
+export async function searchArtistDiscography(term) {
+    const artists = await searchArtists(term, { limit: 1 });
+    const best = artists[0];
+    if (!best) return null;
+
+    const { artist, albums } = await fetchArtistAlbums(best.artistId, { limit: 200 });
+    return { artist: artist || best, albums };
+}

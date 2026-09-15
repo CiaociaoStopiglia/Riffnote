@@ -6,13 +6,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input, Select, Spin } from 'antd';
 import toast from 'react-hot-toast';
-import { ArrowLeft, User, ShieldCheck, Lock, Save, Mail, KeyRound, Music, Radio } from 'lucide-react';
+import { ArrowLeft, User, ShieldCheck, Lock, Save, Mail, KeyRound, Music, Radio, Disc3, Download } from 'lucide-react';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { updateProfile as updateAuthProfile } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
 import { changeEmail, changePassword } from '../lib/account';
 import { useAuth } from '../context/AuthContext';
 import AvatarFrame, { AVATAR_FRAMES } from '../components/AvatarFrame';
+import { generateGithubCardPreviewUrl, downloadGithubCard } from '../lib/githubCard';
 import styles from './page.module.css';
 
 const PRONOUN_OPTIONS = [
@@ -76,6 +77,11 @@ export default function SettingsPage() {
   });
   const [repliesPermission, setRepliesPermission] = useState('anyone');
 
+  // --- cartão pro README do GitHub ---
+  const [cardStats, setCardStats] = useState({ ratingsCount: 0, followersCount: 0, createdAt: null });
+  const [cardPreviewUrl, setCardPreviewUrl] = useState('');
+  const [downloadingCard, setDownloadingCard] = useState(false);
+
   // --- troca de e-mail ---
   const [emailFormOpen, setEmailFormOpen] = useState(false);
   const [newEmail, setNewEmail] = useState('');
@@ -117,6 +123,11 @@ export default function SettingsPage() {
             bannerStyle: data.bannerStyle || 'bottom',
           });
           setRepliesPermission(data.repliesPermission || 'anyone');
+          setCardStats({
+            ratingsCount: data.ratingsCount || 0,
+            followersCount: data.followersCount || 0,
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : null,
+          });
         }
       } catch (err) {
         toast.error('Não consegui carregar suas configurações.');
@@ -131,6 +142,31 @@ export default function SettingsPage() {
   function updateField(key, value) {
     setForm((f) => ({ ...f, [key]: value }));
   }
+
+  useEffect(() => {
+    if (section !== 'cartao' || !user || cardPreviewUrl) return;
+
+    let cancelled = false;
+    const displayName = [form.givenName, form.familyName].filter(Boolean).join(' ') || user.displayName || '';
+    generateGithubCardPreviewUrl({
+      username: form.username || user.displayName || 'usuario',
+      displayName,
+      photoURL: user.photoURL || '',
+      ratingsCount: cardStats.ratingsCount,
+      followersCount: cardStats.followersCount,
+      createdAt: cardStats.createdAt,
+    })
+      .then((url) => {
+        if (!cancelled) setCardPreviewUrl(url);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error('Não consegui gerar o cartão. Tenta de novo.');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [section, user, cardPreviewUrl, cardStats, form.username, form.givenName, form.familyName]);
 
   async function handleSaveProfile() {
     setSavingProfile(true);
@@ -233,6 +269,26 @@ export default function SettingsPage() {
     }
   }
 
+  const cardProfile = {
+    username: form.username || user?.displayName || 'usuario',
+    displayName: [form.givenName, form.familyName].filter(Boolean).join(' ') || user?.displayName || '',
+    photoURL: user?.photoURL || '',
+    ratingsCount: cardStats.ratingsCount,
+    followersCount: cardStats.followersCount,
+    createdAt: cardStats.createdAt,
+  };
+
+  async function handleDownloadCard() {
+    setDownloadingCard(true);
+    try {
+      await downloadGithubCard(cardProfile);
+    } catch (err) {
+      toast.error('Não consegui baixar o cartão. Tenta de novo.');
+    } finally {
+      setDownloadingCard(false);
+    }
+  }
+
   if (loadingUser || !user || loadingData) {
     return (
       <div className={styles.loadingPage}>
@@ -264,6 +320,12 @@ export default function SettingsPage() {
             label="Privacidade"
             active={section === 'privacidade'}
             onClick={() => setSection('privacidade')}
+          />
+          <NavItem
+            icon={Disc3}
+            label="Cartão GitHub"
+            active={section === 'cartao'}
+            onClick={() => setSection('cartao')}
           />
         </nav>
 
@@ -299,7 +361,7 @@ export default function SettingsPage() {
                           </div>
                         </AvatarFrame>
                       </div>
-                      <div className={styles.frameLabelStack}>
+                      <div className={styles.frameLabelRow}>
                         <span className={styles.frameLabel}>{f.label}</span>
                         {f.isNew && <span className={styles.frameBadge}>novo</span>}
                       </div>
@@ -596,6 +658,41 @@ export default function SettingsPage() {
                 <Save size={15} />
                 {savingPrivacy ? 'Salvando…' : 'Salvar preferências'}
               </button>
+            </div>
+          )}
+
+          {/* ---------------- CARTÃO GITHUB ---------------- */}
+          {section === 'cartao' && (
+            <div className={styles.card}>
+              <div className={styles.cardTitle}>Cartão pro README do GitHub</div>
+              <div className={styles.cardSub}>
+                Gera uma imagem com seu perfil do Riffnote (avaliações, seguidores e tempo de
+                casa) pra colar no seu README do GitHub.
+              </div>
+
+              <div className={styles.githubCardPreview}>
+                {cardPreviewUrl ? (
+                  <img src={cardPreviewUrl} alt="Pré-visualização do cartão do Riffnote" />
+                ) : (
+                  <Spin size="large" />
+                )}
+              </div>
+
+              <button
+                type="button"
+                className={styles.saveBtn}
+                onClick={handleDownloadCard}
+                disabled={downloadingCard}
+                style={{ marginTop: 20 }}
+              >
+                <Download size={15} />
+                {downloadingCard ? 'Baixando…' : 'Baixar imagem'}
+              </button>
+
+              <p className={styles.helpText} style={{ marginTop: 10 }}>
+                Cole a imagem baixada no seu README, ou suba num serviço de imagens e use{' '}
+                <code>{'<img src="URL_DA_IMAGEM" alt="Meu Riffnote" />'}</code>.
+              </p>
             </div>
           )}
         </div>

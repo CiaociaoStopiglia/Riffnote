@@ -124,6 +124,23 @@
   font-size: 0.82rem;
   margin-bottom: 22px;
 }
+
+.githubCardPreview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  border-radius: 12px;
+  background: #ffffff;
+  padding: 16px;
+}
+
+.githubCardPreview img {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 10px;
+  display: block;
+}
  
 .grid2 {
   display: grid;
@@ -140,15 +157,17 @@
  
 .frameGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
   gap: 14px;
 }
- 
+
 .frameOption {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  min-width: 0;
   background: none;
   border: 1px solid transparent;
   border-radius: 10px;
@@ -190,27 +209,30 @@
   object-fit: cover;
 }
  
-.frameLabelStack {
+.frameLabelRow {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 24px;
+  gap: 4px 6px;
+  width: 100%;
+  min-height: 18px;
+  line-height: 1.25;
 }
 
 .frameLabel {
   font-size: 0.72rem;
   color: var(--ink-muted);
   text-align: center;
-  white-space: nowrap;
-  display: inline-block;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .frameBadge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   padding: 2px 6px;
   border-radius: 999px;
   background: linear-gradient(135deg, #9bf7bf, #2fe28a);
