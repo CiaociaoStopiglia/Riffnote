@@ -37,9 +37,9 @@ const DECORATIVE_FRAME_ENLARGE = {
   'frame-ears': 1.2,
   'frame-eyes': 1.2,
   'frame-crab': 1.3,
-  'frame-watermelon': 1.22,
+  'frame-watermelon': 1.32,
   'frame-flowers': 1.3,
-  'frame-greenring': 1.15,
+  'frame-greenring': 1.4,
 };
 
 function Flower({ x, y, color, delay }) {
@@ -142,7 +142,7 @@ function DecorativeFrameSvg({ frame }) {
         <svg className={styles.decorFrame} viewBox="0 0 160 160" aria-hidden="true">
           <defs>
             <filter id={filterId} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3.5" result="blur" />
+              <feGaussianBlur stdDeviation="1.6" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
