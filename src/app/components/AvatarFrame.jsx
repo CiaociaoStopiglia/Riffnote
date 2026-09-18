@@ -1,5 +1,6 @@
 // src/app/components/AvatarFrame.jsx
 import { useId } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import styles from './AvatarFrame.module.css';
 
 // Lista única — reaproveitada tanto pra renderizar a moldura quanto pro
@@ -48,31 +49,49 @@ const DECORATIVE_FRAME_ENLARGE = {
   'frame-batman': 1.3,
 };
 
-// Silhueta de morcego, desenhada centrada em (0,0) — reaproveitada pelos
-// morcegos que orbitam a moldura do Batman.
+// Silhueta de morcego (asas + orelhinhas + corpo), desenhada centrada em
+// (0,0) — reaproveitada pelos morcegos que orbitam a moldura do Batman.
 const BAT_PATH =
-  'M0,-2 C-2,-5 -6,-6 -9,-4 C-7,-3 -6,-2 -6,-1 C-9,-1 -13,0 -14,3 ' +
-  'C-11,3 -8,2 -6,1 C-7,3 -9,5 -11,6 C-7,6 -4,4 -2,2 C-1,3 1,3 2,2 ' +
-  'C4,4 7,6 11,6 C9,5 7,3 6,1 C8,2 11,3 14,3 C13,0 9,-1 6,-1 ' +
-  'C6,-2 7,-3 9,-4 C6,-6 2,-5 0,-2 Z';
+  'M-16,-4 C-12,-10 -6,-9 -3,-2 L-1.5,-9 L0,-5 L1.5,-9 L3,-2 C6,-9 12,-10 16,-4 ' +
+  'C10,0 5,2 3,1 C4,5 2,8 0,9 C-2,8 -4,5 -3,1 C-5,2 -10,0 -16,-4 Z';
 
+// Amostra pontos ao redor de um círculo (relativo ao centro do avatar) pra
+// animar x/y do morcego — evita depender de transform-origin em cima de
+// rotate, que a lib `motion` ignora em elementos SVG (ela calcula o pivô
+// pela bounding box do próprio elemento, não pelo valor CSS informado).
+function circleKeyframes(radius, startAngleDeg, reverse, steps = 24) {
+  const dir = reverse ? -1 : 1;
+  const xs = [];
+  const ys = [];
+  for (let i = 0; i <= steps; i++) {
+    const rad = ((startAngleDeg + (dir * 360 * i) / steps) * Math.PI) / 180;
+    xs.push(radius * Math.sin(rad));
+    ys.push(-radius * Math.cos(rad));
+  }
+  return { xs, ys };
+}
+
+// Morcego que orbita a foto batendo asa — animado com a lib `motion`
+// (Framer Motion) pra ficar com o voo mais orgânico. O primeiro e o
+// último ponto do círculo coincidem, então o loop infinito não "pula".
 function Bat({ angle, radius, duration, delay, reverse, flapDelay }) {
+  const reduceMotion = useReducedMotion();
+  const { xs, ys } = circleKeyframes(radius, angle, reverse);
+
   return (
-    <g transform={`rotate(${angle} 80 80)`}>
-      <g
-        className={styles.batOrbit}
-        style={{
-          animationDuration: `${duration}s`,
-          animationDelay: `${delay}s`,
-          animationDirection: reverse ? 'reverse' : 'normal',
-        }}
+    <g transform="translate(80, 80)">
+      <motion.g
+        animate={reduceMotion ? { x: xs[0], y: ys[0] } : { x: xs, y: ys }}
+        transition={reduceMotion ? { duration: 0 } : { duration, delay, repeat: Infinity, ease: 'linear' }}
       >
-        <g transform={`translate(80, ${80 - radius})`}>
-          <g className={styles.batFlap} style={{ animationDelay: `${flapDelay}s` }}>
-            <path d={BAT_PATH} fill="#0a0a0d" stroke="#c9d4f2" strokeWidth="0.6" strokeOpacity="0.55" />
-          </g>
-        </g>
-      </g>
+        <motion.g
+          style={{ transformOrigin: '0px 0px' }}
+          animate={reduceMotion ? { scaleX: 1 } : { scaleX: [1, 0.32, 1], scaleY: [1, 1.1, 1] }}
+          transition={reduceMotion ? { duration: 0 } : { duration: 0.55, delay: flapDelay, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <path d={BAT_PATH} fill="#0a0a0d" stroke="#c9d4f2" strokeWidth="0.6" strokeOpacity="0.6" />
+        </motion.g>
+      </motion.g>
     </g>
   );
 }
