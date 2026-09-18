@@ -73,31 +73,38 @@ export default function AlbunsPage() {
         setFilterLoading(true);
         setFilterErrored(false);
 
-        searchDiscogsAlbums({
-            decade,
-            genre,
-            style,
-            country,
-            q: filterQuery.trim() || undefined,
-            page: 1,
-        })
-            .then((data) => {
-                if (cancelled) return;
-                setFilterResults(data.results);
-                setFilterPage(1);
-                setFilterHasMore(data.page < data.pages);
+        // Debounce: sem isso, cada tecla digitada em "Buscar dentro do
+        // recorte" (ou troca rápida de filtro) disparava uma chamada nova pra
+        // Discogs. O token tem limite de 60 req/min — estourava rapidinho e
+        // toda busca seguinte caía no erro genérico até o limite resetar.
+        const timer = setTimeout(() => {
+            searchDiscogsAlbums({
+                decade,
+                genre,
+                style,
+                country,
+                q: filterQuery.trim() || undefined,
+                page: 1,
             })
-            .catch(() => {
-                if (cancelled) return;
-                setFilterErrored(true);
-                toast.error('Não consegui buscar na Discogs agora.');
-            })
-            .finally(() => {
-                if (!cancelled) setFilterLoading(false);
-            });
+                .then((data) => {
+                    if (cancelled) return;
+                    setFilterResults(data.results);
+                    setFilterPage(1);
+                    setFilterHasMore(data.page < data.pages);
+                })
+                .catch(() => {
+                    if (cancelled) return;
+                    setFilterErrored(true);
+                    toast.error('Não consegui buscar na Discogs agora.');
+                })
+                .finally(() => {
+                    if (!cancelled) setFilterLoading(false);
+                });
+        }, 450);
 
         return () => {
             cancelled = true;
+            clearTimeout(timer);
         };
     }, [decade, genre, country, style, filterQuery, hasAnyFilter]);
 
