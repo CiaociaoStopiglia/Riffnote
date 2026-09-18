@@ -25,6 +25,8 @@ export const AVATAR_FRAMES = [
   { id: 'frame-watermelon', label: 'Melancia', isNew: true },
   { id: 'frame-flowers', label: 'Flores', isNew: true },
   { id: 'frame-greenring', label: 'Anel de energia verde', isNew: true },
+  { id: 'frame-basketball', label: 'Bola de basquete', isNew: true },
+  { id: 'frame-propeller-hat', label: 'Chapéu de hélice', isNew: true },
 ];
 
 // As molduras decorativas (bichinhos, frutas...) foram desenhadas pensando
@@ -40,6 +42,8 @@ const DECORATIVE_FRAME_ENLARGE = {
   'frame-watermelon': 1.32,
   'frame-flowers': 1.3,
   'frame-greenring': 1.4,
+  'frame-basketball': 1.2,
+  'frame-propeller-hat': 1.35,
 };
 
 function Flower({ x, y, color, delay }) {
@@ -164,6 +168,50 @@ function DecorativeFrameSvg({ frame }) {
             <rect x="78" y="146" width="4" height="10" fill="#baffcf" />
             <rect x="4" y="78" width="10" height="4" fill="#baffcf" />
             <rect x="146" y="78" width="10" height="4" fill="#baffcf" />
+          </g>
+        </svg>
+      );
+    }
+
+    case 'frame-basketball':
+      return (
+        <svg className={styles.decorFrame} viewBox="0 0 160 160" aria-hidden="true">
+          <g className={styles.ballOrbit} style={{ transformOrigin: '80px 80px' }}>
+            <g transform="translate(80,2)">
+              <g className={styles.ballSpin}>
+                <circle r="13" fill="#e8791d" stroke="#3a2313" strokeWidth="1.5" />
+                <path d="M-13 0 H13 M0 -13 V13" stroke="#3a2313" strokeWidth="1.3" />
+                <path d="M-9 -9 Q0 0 -9 9" stroke="#3a2313" strokeWidth="1.1" fill="none" />
+                <path d="M9 -9 Q0 0 9 9" stroke="#3a2313" strokeWidth="1.1" fill="none" />
+              </g>
+            </g>
+          </g>
+        </svg>
+      );
+
+    case 'frame-propeller-hat': {
+      const clipId = `beanie-clip-${reactId}`;
+      return (
+        <svg className={styles.decorFrame} viewBox="0 0 160 160" aria-hidden="true">
+          <defs>
+            <clipPath id={clipId}>
+              <path d="M50 12 Q80 -20 110 12 Z" />
+            </clipPath>
+          </defs>
+          <g clipPath={`url(#${clipId})`}>
+            <rect x="50" y="-25" width="15" height="40" fill="#e0503c" />
+            <rect x="65" y="-25" width="15" height="40" fill="#f2b46b" />
+            <rect x="80" y="-25" width="15" height="40" fill="#3fa796" />
+            <rect x="95" y="-25" width="15" height="40" fill="#8a9a5b" />
+          </g>
+          <path d="M50 12 Q80 -20 110 12" fill="none" stroke="#2a2a2a" strokeWidth="2" />
+          <ellipse cx="80" cy="12" rx="32" ry="6" fill="none" stroke="#2a2a2a" strokeWidth="2" />
+          <circle cx="80" cy="-19" r="3" fill="#f2c94c" stroke="#2a2a2a" strokeWidth="1" />
+          <line x1="80" y1="-19" x2="80" y2="-30" stroke="#555" strokeWidth="2" />
+          <g className={styles.propellerSpin} style={{ transformOrigin: '80px -30px' }}>
+            <ellipse cx="80" cy="-30" rx="16" ry="4" fill="#e0503c" />
+            <ellipse cx="80" cy="-30" rx="4" ry="16" fill="#3fa796" />
+            <circle cx="80" cy="-30" r="3" fill="#f2c94c" />
           </g>
         </svg>
       );

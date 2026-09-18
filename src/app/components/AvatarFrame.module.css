@@ -256,6 +256,22 @@
   to { transform: rotate(360deg); }
 }
 
+/* 15 — Bola de basquete: orbita ao redor da foto girando no próprio eixo */
+.ballOrbit {
+  animation: sparkSpin 6s linear infinite;
+}
+.ballSpin {
+  animation: ballSpin 1.1s linear infinite;
+}
+@keyframes ballSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* 16 — Chapéu de hélice: a hélice gira rápido, o chapéu fica parado na cabeça */
+.propellerSpin {
+  animation: afSpin 0.5s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ring,
   .earsSway,
@@ -265,7 +281,10 @@
   .melonSpin,
   .flowerPulse,
   .ringGlow,
-  .sparks {
+  .sparks,
+  .ballOrbit,
+  .ballSpin,
+  .propellerSpin {
     animation: none !important;
   }
 }
