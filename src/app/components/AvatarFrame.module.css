@@ -272,6 +272,21 @@
   animation: afSpin 0.5s linear infinite;
 }
 
+/* 17 — Batman: capuz fixo no topo + morcegos batendo asa enquanto orbitam a foto */
+.batOrbit {
+  animation: afSpin 6s linear infinite;
+  transform-origin: 80px 80px;
+}
+.batFlap {
+  animation: batFlap 0.5s ease-in-out infinite;
+  transform-origin: 0 0;
+  filter: drop-shadow(0 0 2px rgba(201, 212, 242, 0.65));
+}
+@keyframes batFlap {
+  0%, 100% { transform: scaleX(1); }
+  50% { transform: scaleX(0.35); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ring,
   .earsSway,
@@ -284,7 +299,9 @@
   .sparks,
   .ballOrbit,
   .ballSpin,
-  .propellerSpin {
+  .propellerSpin,
+  .batOrbit,
+  .batFlap {
     animation: none !important;
   }
 }

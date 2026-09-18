@@ -27,6 +27,7 @@ export const AVATAR_FRAMES = [
   { id: 'frame-greenring', label: 'Anel de energia verde', isNew: true },
   { id: 'frame-basketball', label: 'Bola de basquete', isNew: true },
   { id: 'frame-propeller-hat', label: 'Chapéu de hélice', isNew: true },
+  { id: 'frame-batman', label: 'Batman', isNew: true },
 ];
 
 // As molduras decorativas (bichinhos, frutas...) foram desenhadas pensando
@@ -44,7 +45,37 @@ const DECORATIVE_FRAME_ENLARGE = {
   'frame-greenring': 1.4,
   'frame-basketball': 1.2,
   'frame-propeller-hat': 1.35,
+  'frame-batman': 1.3,
 };
+
+// Silhueta de morcego, desenhada centrada em (0,0) — reaproveitada pelos
+// morcegos que orbitam a moldura do Batman.
+const BAT_PATH =
+  'M0,-2 C-2,-5 -6,-6 -9,-4 C-7,-3 -6,-2 -6,-1 C-9,-1 -13,0 -14,3 ' +
+  'C-11,3 -8,2 -6,1 C-7,3 -9,5 -11,6 C-7,6 -4,4 -2,2 C-1,3 1,3 2,2 ' +
+  'C4,4 7,6 11,6 C9,5 7,3 6,1 C8,2 11,3 14,3 C13,0 9,-1 6,-1 ' +
+  'C6,-2 7,-3 9,-4 C6,-6 2,-5 0,-2 Z';
+
+function Bat({ angle, radius, duration, delay, reverse, flapDelay }) {
+  return (
+    <g transform={`rotate(${angle} 80 80)`}>
+      <g
+        className={styles.batOrbit}
+        style={{
+          animationDuration: `${duration}s`,
+          animationDelay: `${delay}s`,
+          animationDirection: reverse ? 'reverse' : 'normal',
+        }}
+      >
+        <g transform={`translate(80, ${80 - radius})`}>
+          <g className={styles.batFlap} style={{ animationDelay: `${flapDelay}s` }}>
+            <path d={BAT_PATH} fill="#0a0a0d" stroke="#c9d4f2" strokeWidth="0.6" strokeOpacity="0.55" />
+          </g>
+        </g>
+      </g>
+    </g>
+  );
+}
 
 function Flower({ x, y, color, delay }) {
   return (
@@ -213,6 +244,26 @@ function DecorativeFrameSvg({ frame }) {
             <ellipse cx="80" cy="-30" rx="4" ry="16" fill="#3fa796" />
             <circle cx="80" cy="-30" r="3" fill="#f2c94c" />
           </g>
+        </svg>
+      );
+    }
+
+    case 'frame-batman': {
+      const bats = [
+        { angle: 15, radius: 74, duration: 6, delay: 0, reverse: false, flapDelay: 0 },
+        { angle: 150, radius: 66, duration: 7.5, delay: 0.6, reverse: true, flapDelay: 0.15 },
+        { angle: 260, radius: 78, duration: 5.2, delay: 1.1, reverse: false, flapDelay: 0.3 },
+      ];
+      return (
+        <svg className={styles.decorFrame} viewBox="0 0 160 160" aria-hidden="true">
+          <path d="M36 46 C14 14, -2 2, 6 0 C24 -3 52 22 58 40 Z" fill="#0a0a0d" stroke="#000" strokeWidth="1.5" />
+          <path d="M124 46 C146 14, 162 2, 154 0 C136 -3 108 22 102 40 Z" fill="#0a0a0d" stroke="#000" strokeWidth="1.5" />
+          <path d="M42 40 C28 18, 20 8, 26 6 C36 6 48 24 52 38 Z" fill="#1c1f2b" />
+          <path d="M118 40 C132 18, 140 8, 134 6 C124 6 112 24 108 38 Z" fill="#1c1f2b" />
+          <path d="M40 42 Q80 22 120 42" fill="none" stroke="#0a0a0d" strokeWidth="8" strokeLinecap="round" />
+          {bats.map((bat, i) => (
+            <Bat key={i} {...bat} />
+          ))}
         </svg>
       );
     }
