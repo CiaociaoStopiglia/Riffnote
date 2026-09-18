@@ -9,13 +9,25 @@ import { ArrowLeft } from 'lucide-react';
 import { listUserRatings } from '../../lib/ratings';
 import { useAuth } from '../../context/AuthContext';
 import StarRating from '../../components/StarRating';
+import Pagination from '../../components/Pagination';
 import styles from './page.module.css';
+
+const PAGE_SIZE = 50;
 
 export default function AllRatedAlbumsPage() {
   const router = useRouter();
   const { user, loadingUser } = useAuth();
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+
+  const totalPages = Math.max(1, Math.ceil(albums.length / PAGE_SIZE));
+  const pageAlbums = albums.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  function goToPage(next) {
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   useEffect(() => {
     if (!loadingUser && !user) {
@@ -54,7 +66,7 @@ export default function AllRatedAlbumsPage() {
           <div className={styles.emptyState}>Você ainda não avaliou nenhum álbum.</div>
         ) : (
           <div className={styles.grid}>
-            {albums.map((item) => (
+            {pageAlbums.map((item) => (
               <div key={item.albumId} className={styles.cardWrap}>
                 <Link href={`/album/${item.albumId}`} className={styles.card}>
                   {item.artwork ? (
@@ -72,6 +84,7 @@ export default function AllRatedAlbumsPage() {
             ))}
           </div>
         )}
+        <Pagination page={page} totalPages={totalPages} onChange={goToPage} />
       </div>
     </div>
   );

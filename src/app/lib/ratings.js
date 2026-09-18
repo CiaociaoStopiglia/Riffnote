@@ -140,10 +140,10 @@ export async function removeRating(uid, albumId) {
   });
 }
 
-export async function listUserRatings(uid, max = 100) {
+export async function listUserRatings(uid) {
   const q = query(collection(db, 'users', uid, 'ratings'), orderBy('updatedAt', 'desc'));
   const snap = await getDocs(q);
-  return snap.docs.slice(0, max).map((d) => d.data());
+  return snap.docs.map((d) => d.data());
 }
 
 export async function listTopRatedAlbums(max = 12) {
