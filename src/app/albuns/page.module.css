@@ -188,6 +188,31 @@
   color: var(--ink);
 }
 
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.filterChip:hover {
+  color: var(--ink);
+  border-color: var(--accent-soft);
+}
+
 .loadMoreRow {
   display: flex;
   justify-content: center;

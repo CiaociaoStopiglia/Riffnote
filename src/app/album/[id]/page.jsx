@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Spin, Input } from 'antd';
 import toast from 'react-hot-toast';
@@ -31,6 +31,7 @@ function formatDuration(ms) {
 
 export default function AlbumPage() {
   const { id } = useParams();
+  const router = useRouter();
   const { user } = useAuth();
 
   const [album, setAlbum] = useState(null);
@@ -343,9 +344,9 @@ export default function AlbumPage() {
   if (!album) {
     return (
       <div className={styles.page}>
-        <Link href="/" className={styles.backLink}>
+        <button type="button" onClick={() => router.back()} className={styles.backLink}>
           <ArrowLeft size={16} /> voltar
-        </Link>
+        </button>
         <div className={styles.section}>Esse álbum não foi encontrado.</div>
       </div>
     );
@@ -355,9 +356,9 @@ export default function AlbumPage() {
 
   return (
     <div className={styles.page}>
-      <Link href="/" className={styles.backLink}>
+      <button type="button" onClick={() => router.back()} className={styles.backLink}>
         <ArrowLeft size={16} /> voltar
-      </Link>
+      </button>
 
       <div className={styles.header}>
         {album.artwork ? (

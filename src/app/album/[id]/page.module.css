@@ -33,6 +33,11 @@
   color: var(--ink-muted);
   text-decoration: none;
   font-size: 0.85rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
 }
  
 .backLink:hover {

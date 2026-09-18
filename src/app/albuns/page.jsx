@@ -28,6 +28,10 @@ import AlbumCard from '../components/AlbumCard';
 import TrackResultRow from '../components/TrackResultRow';
 import styles from './page.module.css';
 
+function labelFor(options, value) {
+    return options.find((o) => o.value === value)?.label || value;
+}
+
 export default function AlbunsPage() {
     const router = useRouter();
 
@@ -60,8 +64,42 @@ export default function AlbunsPage() {
     const [filterPage, setFilterPage] = useState(1);
     const [filterHasMore, setFilterHasMore] = useState(false);
     const [filterErrored, setFilterErrored] = useState(false);
+    // Só passa a sincronizar a URL depois de ler ela — nunca no server (não
+    // existe URL de verdade lá) nem no primeiro render do cliente (senão o
+    // React acusa mismatch de hidratação, já que o HTML do servidor sempre
+    // vem "sem filtro").
+    const [filtersHydrated, setFiltersHydrated] = useState(false);
 
     const hasAnyFilter = Boolean(decade || genre || country || style || filterQuery.trim());
+
+    // Lê os filtros salvos na URL uma vez, já no cliente, depois do primeiro
+    // render — assim o back-arrow de `/album/[id]` (ou um refresh) restaura
+    // exatamente onde a pessoa deixou, em vez de reiniciar zerado.
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('decade')) setDecade(params.get('decade'));
+        if (params.get('genre')) setGenre(params.get('genre'));
+        if (params.get('country')) setCountry(params.get('country'));
+        if (params.get('style')) setStyle(params.get('style'));
+        if (params.get('q')) setFilterQuery(params.get('q'));
+        setFiltersHydrated(true);
+    }, []);
+
+    // Mantém a URL sincronizada com os filtros ativos daqui pra frente.
+    useEffect(() => {
+        if (!filtersHydrated) return;
+
+        const params = new URLSearchParams();
+        if (decade) params.set('decade', decade);
+        if (genre) params.set('genre', genre);
+        if (country) params.set('country', country);
+        if (style) params.set('style', style);
+        if (filterQuery.trim()) params.set('q', filterQuery.trim());
+
+        const qs = params.toString();
+        const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+    }, [decade, genre, country, style, filterQuery, filtersHydrated]);
 
     useEffect(() => {
         if (!hasAnyFilter) {
@@ -353,6 +391,36 @@ export default function AlbunsPage() {
                         allowClear
                     />
                 </div>
+
+                {hasAnyFilter && (
+                    <div className={styles.filterChips}>
+                        {decade && (
+                            <button type="button" className={styles.filterChip} onClick={() => setDecade(null)}>
+                                {labelFor(DECADES, decade)} <X size={12} />
+                            </button>
+                        )}
+                        {genre && (
+                            <button type="button" className={styles.filterChip} onClick={() => setGenre(null)}>
+                                {labelFor(GENRES, genre)} <X size={12} />
+                            </button>
+                        )}
+                        {country && (
+                            <button type="button" className={styles.filterChip} onClick={() => setCountry(null)}>
+                                {labelFor(COUNTRIES, country)} <X size={12} />
+                            </button>
+                        )}
+                        {style && (
+                            <button type="button" className={styles.filterChip} onClick={() => setStyle(null)}>
+                                {labelFor(STYLES, style)} <X size={12} />
+                            </button>
+                        )}
+                        {filterQuery.trim() && (
+                            <button type="button" className={styles.filterChip} onClick={() => setFilterQuery('')}>
+                                "{filterQuery.trim()}" <X size={12} />
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {!hasAnyFilter ? (
                     <div className={styles.emptyState}>
