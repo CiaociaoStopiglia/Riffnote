@@ -1,0 +1,46 @@
+/* src/app/components/RatingFilter.module.css */
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 22px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #2a2620;
+  background: #17151a;
+  color: #948c7b;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.chip:hover:not(:disabled) {
+  color: #ede6d6;
+  border-color: #5c564a;
+}
+
+.chip:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.chipActive {
+  background: #c9432b;
+  border-color: #c9432b;
+  color: #ede6d6;
+}
+
+.count {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.7;
+  margin-left: 2px;
+}
