@@ -1,0 +1,34 @@
+/* src/app/components/AffinityBadge.module.css */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid #2a2620;
+  border-radius: 999px;
+  background: #17151a;
+  font-size: 0.8rem;
+  color: #ede6d6;
+}
+
+.percent {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: #c9432b;
+  font-weight: 800;
+}
+
+.muted {
+  color: #948c7b;
+  font-weight: 400;
+}
+
+.link {
+  color: #e06a4d;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

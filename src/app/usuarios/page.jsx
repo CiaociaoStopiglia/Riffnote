@@ -127,6 +127,11 @@ export default function UsuariosPage() {
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Pessoas</h1>
         <p className={styles.pageSub}>Encontre quem também vive de fone no ouvido.</p>
+        {currentUser && (
+          <Link href="/afinidade" style={{ color: '#e06a4d', fontSize: '0.85rem', fontWeight: 600 }}>
+            Ver quem tem gosto parecido com o seu →
+          </Link>
+        )}
       </div>
 
       <div className={styles.searchWrap}>

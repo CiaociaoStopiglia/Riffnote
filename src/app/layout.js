@@ -4,6 +4,7 @@ import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider, theme } from 'antd';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
+import AnalyticsTracker from './components/AnalyticsTracker';
 
 export const metadata = {
     title: 'RiffNote. Toda Música Guardada.',
@@ -38,6 +39,7 @@ export default function RootLayout({ children }) {
                         </ConfigProvider>
                     </AntdRegistry>
                     <Toaster />
+                    <AnalyticsTracker />
                 </AuthProvider>
             </body>
         </html>

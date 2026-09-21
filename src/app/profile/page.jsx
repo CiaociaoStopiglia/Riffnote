@@ -22,11 +22,12 @@ import FavoriteAlbumsRow from '../components/FavoriteAlbumsRow';
 import { listDiscoverDecisions } from '../lib/discover';
 import AvatarFrame from '../components/AvatarFrame';
 import FollowListModal from '../components/FollowListModal';
+import TasteXray from '../components/TasteXray';
 import styles from './page.module.css';
 
 const BIO_MAX = 280;
 const MAX_IMAGE_MB = 6;
-const TABS = ['Perfil', 'Sulco', 'Atividade', 'Listas', 'Listenlist', 'Descobertas'];
+const TABS = ['Perfil', 'Sulco', 'Raio-X', 'Atividade', 'Listas', 'Listenlist', 'Descobertas'];
 
 function timeAgo(timestamp) {
   if (!timestamp?.seconds) return '';
@@ -374,6 +375,11 @@ export default function ProfilePage() {
             {profileBadge && <span className={`${styles.profileBadge} ${profileBadge === 'ADM' ? styles.profileBadgeAdmin : styles.profileBadgeMember}`}>{profileBadge}</span>}
           </div>
           <div className={styles.handle}>{user.email}</div>
+          {isAdminEmail(user.email) && (
+            <Link href="/admin" className={styles.toggleLink}>
+              Abrir painel administrativo →
+            </Link>
+          )}
         </div>
 
         <div className={styles.statsBar}>
@@ -600,6 +606,8 @@ export default function ProfilePage() {
             )}
           </>
         )}
+
+        {activeTab === 'Raio-X' && <TasteXray albums={ratedAlbums} />}
 
         {activeTab === 'Atividade' && (
           <>

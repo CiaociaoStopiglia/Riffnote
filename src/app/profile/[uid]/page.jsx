@@ -21,6 +21,7 @@ import { optimizeCloudinaryUrl } from '../../lib/cloudinary';
 import FavoriteAlbumsRow from '../../components/FavoriteAlbumsRow';
 import AvatarFrame from '../../components/AvatarFrame';
 import FollowListModal from '../../components/FollowListModal';
+import AffinityBadge from '../../components/AffinityBadge';
 import styles from '../page.module.css';
 
 const TABS = ['Perfil', 'Sulco', 'Atividade', 'Listas', 'Listenlist'];
@@ -229,6 +230,7 @@ export default function PublicProfilePage() {
               </span>
             )}
           </div>
+          {currentUser && <AffinityBadge currentUid={currentUser.uid} theirRatings={ratedAlbums} />}
         </div>
 
         <div className={styles.statsBar}>

@@ -1,0 +1,35 @@
+// Regras de segurança do Firestore para o painel administrativo.
+//
+// COMO USAR: no console do Firebase > Firestore Database > Regras, cole o
+// conteúdo abaixo DENTRO do bloco `match /databases/{database}/documents { ... }`
+// que já existe (junto com as regras atuais do site) e publique.
+//
+// Este arquivo NÃO é lido automaticamente pelo projeto: ele é só a referência.
+
+function isAdmin() {
+  return request.auth != null
+    && request.auth.token.email == 'joao.stopiglia4@gmail.com'
+    && request.auth.token.email_verified == true;
+}
+
+// Contadores agregados por dia (visitas, pageviews, APIs, erros).
+// Qualquer visitante (logado ou não) precisa escrever; só o admin lê.
+match /analyticsDaily/{day} {
+  allow read: if isAdmin();
+  allow create, update: if request.resource.size() < 200000;
+  allow delete: if false;
+}
+
+// Um documento por navegador (última visita, aparelho, etc.).
+match /analyticsVisitors/{visitorId} {
+  allow read: if isAdmin();
+  allow create, update: if request.resource.size() < 5000;
+  allow delete: if false;
+}
+
+// O painel conta avaliações de todos os usuários (collection group query).
+// Consultas de collection group exigem esta regra explícita, separada
+// da regra de users/{uid}/ratings/{id}.
+match /{path=**}/ratings/{ratingId} {
+  allow read: if isAdmin();
+}
