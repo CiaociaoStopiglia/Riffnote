@@ -5,6 +5,8 @@ import {
   getDocs,
   updateDoc,
   collection,
+  collectionGroup,
+  where,
   query,
   orderBy,
   limit as fbLimit,
@@ -150,4 +152,46 @@ export async function listTopRatedAlbums(max = 12) {
   const q = query(collection(db, 'albumStats'), orderBy('average', 'desc'), fbLimit(max));
   const snap = await getDocs(q);
   return snap.docs.map((d) => d.data());
+}
+
+/**
+ * Todas as avaliações (de todo mundo) de UM álbum, mais recentes primeiro,
+ * já com nome/foto/moldura de quem avaliou. Usa collection group em
+ * `ratings`. O albumId é buscado nos dois formatos (número/texto) porque
+ * notas antigas foram gravadas com o tipo do id do iTunes.
+ */
+export async function listAlbumRatings(albumId) {
+  const ids = [String(albumId)];
+  const numericId = Number(albumId);
+  if (!Number.isNaN(numericId)) ids.push(numericId);
+
+  const snap = await getDocs(query(collectionGroup(db, 'ratings'), where('albumId', 'in', ids)));
+
+  const ratings = snap.docs
+    .map((d) => ({ uid: d.ref.parent.parent?.id, ...d.data() }))
+    .filter((r) => r.uid && r.rating > 0)
+    .sort((a, b) => (b.updatedAt?.toMillis?.() ?? 0) - (a.updatedAt?.toMillis?.() ?? 0));
+
+  const uniqueUids = [...new Set(ratings.map((r) => r.uid))];
+  const profiles = {};
+  await Promise.all(
+    uniqueUids.map(async (uid) => {
+      try {
+        const userSnap = await getDoc(doc(db, 'users', uid));
+        if (userSnap.exists()) profiles[uid] = userSnap.data();
+      } catch {
+        // sem perfil legível: cai no "Usuário" anônimo
+      }
+    })
+  );
+
+  return ratings.map((r) => ({
+    uid: r.uid,
+    rating: r.rating,
+    review: (r.review || '').trim(),
+    updatedAt: r.updatedAt?.toMillis?.() ?? null,
+    displayName: profiles[r.uid]?.displayName || 'Usuário',
+    photoURL: profiles[r.uid]?.photoURL || null,
+    avatarFrame: profiles[r.uid]?.avatarFrame || 'none',
+  }));
 }

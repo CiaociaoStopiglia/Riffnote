@@ -21,6 +21,7 @@ import {
     searchAlbums,
     searchTracks,
     searchArtistDiscography,
+    searchDeezerAlbums,
 } from '../lib/musicApi';
 import { listTopRatedAlbums } from '../lib/ratings';
 import { searchDiscogsAlbums, DECADES, GENRES, STYLES, COUNTRIES } from '../lib/discogs';
@@ -201,50 +202,77 @@ export default function AlbunsPage() {
             .trim();
     }
 
+    // Escolhe, entre os candidatos do iTunes, o que bate com o álbum da Discogs.
+    function pickBestMatch(matches, discogsAlbum, cleanTitle) {
+        const artistNorm = normalizeForMatch(discogsAlbum.artist);
+        const titleNorm = normalizeForMatch(cleanTitle);
+
+        // Exige o artista bater — só o título é frágil demais (compilações,
+        // covers, "best of" batem por título e não podem passar aqui).
+        const candidates = matches
+            .map((m) => {
+                const matchArtistNorm = normalizeForMatch(m.artist);
+                const matchTitleNorm = normalizeForMatch(stripEditionSuffix(m.title));
+                const artistMatches =
+                    Boolean(artistNorm) &&
+                    (matchArtistNorm === artistNorm ||
+                        matchArtistNorm.includes(artistNorm) ||
+                        artistNorm.includes(matchArtistNorm));
+
+                let score = 0;
+                if (matchTitleNorm === titleNorm) score += 3;
+                else if (matchTitleNorm.includes(titleNorm) || titleNorm.includes(matchTitleNorm))
+                    score += 1;
+
+                return { match: m, artistMatches, score };
+            })
+            .filter((c) => c.artistMatches && c.score > 0)
+            .sort((a, b) => b.score - a.score);
+
+        return candidates[0]?.match ?? null;
+    }
+
     async function handleOpenDiscogsAlbum(discogsAlbum) {
         if (resolvingAlbumId) return;
 
         setResolvingAlbumId(discogsAlbum.id);
         try {
             const cleanTitle = stripEditionSuffix(discogsAlbum.title);
-            const matches = await searchAlbums(cleanTitle, { limit: 10 });
 
-            if (matches.length === 0) {
+            // A busca livre só por título é engolida por covers/singles com o
+            // mesmo nome ("Toxicity", "Blonde"), então o disco de verdade some
+            // do top 10. Tentamos ela primeiro (barata) e, se não achar, caímos
+            // pra discografia completa do artista.
+            let best = null;
+            try {
+                const matches = await searchAlbums(cleanTitle, { limit: 10 });
+                best = pickBestMatch(matches, discogsAlbum, cleanTitle);
+            } catch {
+                // segue pro fallback
+            }
+
+            if (!best) {
+                const discography = await searchArtistDiscography(discogsAlbum.artist);
+                if (discography?.albums?.length) {
+                    best = pickBestMatch(discography.albums, discogsAlbum, cleanTitle);
+                }
+            }
+
+            // Último recurso: a Deezer tem catálogo maior que o iTunes.
+            if (!best) {
+                const deezerMatches = await searchDeezerAlbums({
+                    artist: discogsAlbum.artist,
+                    album: cleanTitle,
+                });
+                best = pickBestMatch(deezerMatches, discogsAlbum, cleanTitle);
+            }
+
+            if (!best) {
                 toast.error('Esse álbum ainda não está no nosso catálogo pra avaliar.');
                 return;
             }
 
-            const artistNorm = normalizeForMatch(discogsAlbum.artist);
-            const titleNorm = normalizeForMatch(cleanTitle);
-
-            // Exige o artista bater — só o título é frágil demais (compilações,
-            // covers, "best of" batem por título e não podem passar aqui).
-            const candidates = matches
-                .map((m) => {
-                    const matchArtistNorm = normalizeForMatch(m.artist);
-                    const matchTitleNorm = normalizeForMatch(stripEditionSuffix(m.title));
-                    const artistMatches =
-                        Boolean(artistNorm) &&
-                        (matchArtistNorm === artistNorm ||
-                            matchArtistNorm.includes(artistNorm) ||
-                            artistNorm.includes(matchArtistNorm));
-
-                    let score = 0;
-                    if (matchTitleNorm === titleNorm) score += 3;
-                    else if (matchTitleNorm.includes(titleNorm) || titleNorm.includes(matchTitleNorm))
-                        score += 1;
-
-                    return { match: m, artistMatches, score };
-                })
-                .filter((c) => c.artistMatches)
-                .sort((a, b) => b.score - a.score);
-
-            if (candidates.length === 0 || candidates[0].score === 0) {
-                toast.error('Esse álbum ainda não está no nosso catálogo pra avaliar.');
-                return;
-            }
-
-            router.push(`/album/${candidates[0].match.id}`);
+            router.push(`/album/${best.id}`);
         } catch (err) {
             toast.error('Não consegui abrir esse álbum agora. Tenta de novo.');
         } finally {

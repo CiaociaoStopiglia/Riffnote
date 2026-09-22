@@ -19,6 +19,7 @@ import { isInListenlist, addToListenlist, removeFromListenlist } from '../../lib
 import { listUserLists, createList, addAlbumToList, removeAlbumFromList } from '../../lib/lists';
 import { useAuth } from '../../context/AuthContext';
 import StarRating from '../../components/StarRating';
+import AlbumReviews from '../../components/AlbumReviews';
 import styles from './page.module.css';
 
 function formatDuration(ms) {
@@ -57,6 +58,7 @@ export default function AlbumPage() {
   const [newListTitle, setNewListTitle] = useState('');
 
   const [trackRatings, setTrackRatings] = useState({}); // { [trackId]: nota }
+  const [reviewsRefresh, setReviewsRefresh] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -148,6 +150,7 @@ export default function AlbumPage() {
       await rateAlbum(user.uid, album, value, myReview);
       setMyRating(value);
       setHasRating(true);
+      setReviewsRefresh((n) => n + 1);
       toast.success(`Você deu ${value} estrela${value > 1 ? 's' : ''} pra esse álbum.`);
     } catch (err) {
       toast.error('Não consegui salvar sua avaliação.');
@@ -164,6 +167,7 @@ export default function AlbumPage() {
     setSavingRating(true);
     try {
       await rateAlbum(user.uid, album, myRating, myReview);
+      setReviewsRefresh((n) => n + 1);
       toast.success('Resenha salva.');
     } catch (err) {
       toast.error('Não consegui salvar sua resenha.');
@@ -228,6 +232,7 @@ export default function AlbumPage() {
       setMyRating(0);
       setMyReview('');
       setHasRating(false);
+      setReviewsRefresh((n) => n + 1);
       toast.success('Avaliação removida.');
     } catch (err) {
       toast.error('Não consegui remover a avaliação.');
@@ -595,6 +600,8 @@ export default function AlbumPage() {
           onEnded={() => setPlayingTrackId(null)}
           style={{ display: 'none' }}
         />
+
+        <AlbumReviews albumId={id} refreshKey={reviewsRefresh} />
       </div>
     </div>
   );

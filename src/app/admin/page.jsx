@@ -4,7 +4,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Spin } from 'antd';
-import { ArrowLeft, RefreshCw, TriangleAlert } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { sendEmailVerification } from 'firebase/auth';
+import {
+  ArrowLeft,
+  RefreshCw,
+  TriangleAlert,
+  Radio,
+  TrendingUp,
+  Users2,
+  Disc3,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { isAdminEmail } from '../lib/admin';
 import { dayKey } from '../lib/analytics';
@@ -64,7 +74,8 @@ function Kpi({ label, value, change, hint }) {
       <span className={styles.kpiValue}>{value}</span>
       {change !== null && change !== undefined && (
         <span className={change >= 0 ? styles.up : styles.down}>
-          {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(0)}% vs. período anterior
+          {change >= 0 ? '▲' : '▼'} {Math.abs(change).toFixed(0)}% vs. período
+          anterior
         </span>
       )}
       {hint && <span className={styles.kpiHint}>{hint}</span>}
@@ -78,11 +89,20 @@ function BarChart({ data, format = fmtNum }) {
   return (
     <div className={styles.chart}>
       {data.map((d, i) => (
-        <div key={d.key || d.label} className={styles.chartCol} title={`${d.label}: ${format(d.value)}`}>
+        <div
+          key={d.key || d.label}
+          className={styles.chartCol}
+          title={`${d.label}: ${format(d.value)}`}
+        >
           <div className={styles.chartTrack}>
-            <div className={styles.chartFill} style={{ height: `${(d.value / max) * 100}%` }} />
+            <div
+              className={styles.chartFill}
+              style={{ height: `${(d.value / max) * 100}%` }}
+            />
           </div>
-          <span className={styles.chartLabel}>{i % step === 0 ? d.label : ''}</span>
+          <span className={styles.chartLabel}>
+            {i % step === 0 ? d.label : ''}
+          </span>
         </div>
       ))}
     </div>
@@ -101,11 +121,17 @@ function RankList({ items, limit = 10, empty = 'Sem dados ainda.' }) {
           <div className={styles.rankTop}>
             <span className={styles.rankLabel}>{item.label}</span>
             <span className={styles.rankValue}>
-              {fmtNum(item.value)} <span className={styles.muted}>({total ? Math.round((item.value / total) * 100) : 0}%)</span>
+              {fmtNum(item.value)}{' '}
+              <span className={styles.muted}>
+                ({total ? Math.round((item.value / total) * 100) : 0}%)
+              </span>
             </span>
           </div>
           <div className={styles.rankTrack}>
-            <div className={styles.rankFill} style={{ width: `${(item.value / max) * 100}%` }} />
+            <div
+              className={styles.rankFill}
+              style={{ width: `${(item.value / max) * 100}%` }}
+            />
           </div>
         </div>
       ))}
@@ -124,11 +150,15 @@ function Card({ title, children, wide }) {
 
 function formatTs(ts) {
   if (!ts?.seconds) return '—';
-  return new Date(ts.seconds * 1000).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
+  return new Date(ts.seconds * 1000).toLocaleString('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  });
 }
 
 export default function AdminPage() {
   const { user, loadingUser } = useAuth();
+  const [sendingVerification, setSendingVerification] = useState(false);
   const isAdmin = !!user && isAdminEmail(user.email) && user.emailVerified;
 
   const [rangeId, setRangeId] = useState('30');
@@ -153,16 +183,21 @@ export default function AdminPage() {
       const startKey = range.days ? daysAgoKey(range.days - 1) : '2000-01-01';
       const prevStartKey = range.days ? daysAgoKey(range.days * 2 - 1) : null;
 
-      const [daily, activeCounts, totals, topLists, signups] = await Promise.all([
-        loadDaily(prevStartKey || startKey),
-        loadActiveVisitors(),
-        loadContentTotals(),
-        loadTops(),
-        loadSignups(range.days ? Date.now() - range.days * 86_400_000 : 0).catch(() => ({})),
-      ]);
+      const [daily, activeCounts, totals, topLists, signups] =
+        await Promise.all([
+          loadDaily(prevStartKey || startKey),
+          loadActiveVisitors(),
+          loadContentTotals(),
+          loadTops(),
+          loadSignups(
+            range.days ? Date.now() - range.days * 86_400_000 : 0,
+          ).catch(() => ({})),
+        ]);
 
       const current = daily.filter((d) => d.day >= startKey);
-      const previous = prevStartKey ? daily.filter((d) => d.day < startKey) : [];
+      const previous = prevStartKey
+        ? daily.filter((d) => d.day < startKey)
+        : [];
       const firstDay = range.days ? startKey : current[0]?.day || today;
 
       setRows(fillDays(current, firstDay, today, signups));
@@ -187,8 +222,15 @@ export default function AdminPage() {
   }
 
   const total = useMemo(() => withDerived(sumDocs(rows)), [rows]);
-  const series = useMemo(() => bucketRows(rows, granularity), [rows, granularity]);
-  const chartData = series.map((b) => ({ key: b.key, label: b.label, value: b[metric] || 0 }));
+  const series = useMemo(
+    () => bucketRows(rows, granularity),
+    [rows, granularity],
+  );
+  const chartData = series.map((b) => ({
+    key: b.key,
+    label: b.label,
+    value: b[metric] || 0,
+  }));
   const routes = useMemo(() => apiRoutes(total.api), [total]);
   const hasData = total.pageViews > 0 || total.apiCount > 0;
 
@@ -201,7 +243,25 @@ export default function AdminPage() {
   }
 
   if (!isAdmin) {
-    const needsVerify = !!user && isAdminEmail(user.email) && !user.emailVerified;
+    const needsVerify =
+      !!user && isAdminEmail(user.email) && !user.emailVerified;
+
+    async function handleSendVerification() {
+      setSendingVerification(true);
+      try {
+        await sendEmailVerification(user);
+        toast.success(
+          'E-mail de verificação enviado. Confira sua caixa de entrada.',
+        );
+      } catch (err) {
+        toast.error(
+          'Não consegui enviar o e-mail de verificação. Tenta de novo em instantes.',
+        );
+      } finally {
+        setSendingVerification(false);
+      }
+    }
+
     return (
       <div className={styles.center}>
         <div className={styles.denied}>
@@ -211,6 +271,25 @@ export default function AdminPage() {
               ? 'Verifique o e-mail desta conta pra acessar o painel.'
               : 'Esta área é só pra administradores.'}
           </p>
+          {needsVerify && (
+            <button
+              type="button"
+              className={styles.link}
+              onClick={handleSendVerification}
+              disabled={sendingVerification}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                font: 'inherit',
+              }}
+            >
+              {sendingVerification
+                ? 'enviando…'
+                : 'reenviar e-mail de verificação'}
+            </button>
+          )}
           <Link href="/" className={styles.link}>
             voltar pra home
           </Link>
@@ -228,10 +307,19 @@ export default function AdminPage() {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Painel administrativo</h1>
-          <p className={styles.muted}>Fuso: America/Sao_Paulo · dados coletados a partir da ativação do rastreio</p>
+          <p className={styles.muted}>
+            Fuso: America/Sao_Paulo · dados coletados a partir da ativação do
+            rastreio
+          </p>
         </div>
-        <button type="button" className={styles.refresh} onClick={load} disabled={loading}>
-          <RefreshCw size={14} className={loading ? styles.spin : ''} /> Atualizar
+        <button
+          type="button"
+          className={styles.refresh}
+          onClick={load}
+          disabled={loading}
+        >
+          <RefreshCw size={14} className={loading ? styles.spin : ''} />{' '}
+          Atualizar
         </button>
       </header>
 
@@ -242,7 +330,8 @@ export default function AdminPage() {
             {error === 'permission' ? (
               <>
                 <b>O Firestore bloqueou a leitura.</b> Publique as regras de{' '}
-                <code>firestore-analytics.rules</code> (raiz do projeto) no console do Firebase e recarregue.
+                <code>firestore-analytics.rules</code> (raiz do projeto) no
+                console do Firebase e recarregue.
               </>
             ) : (
               <b>Não consegui carregar os dados. Tente atualizar.</b>
@@ -252,13 +341,24 @@ export default function AdminPage() {
       )}
 
       {/* Agora / janelas móveis */}
+      <div className={styles.groupLabel}>
+        <span className={styles.liveDot} /> Agora mesmo
+      </div>
       <div className={styles.kpiGrid}>
-        <Kpi label="Online agora" value={fmtNum(active?.online)} hint="últimos 5 min" />
+        <Kpi
+          label="Online agora"
+          value={fmtNum(active?.online)}
+          hint="últimos 5 min"
+        />
         <Kpi label="Ativos em 24h" value={fmtNum(active?.day)} />
         <Kpi label="Ativos em 7 dias" value={fmtNum(active?.week)} />
         <Kpi label="Ativos em 30 dias" value={fmtNum(active?.month)} />
         <Kpi label="Ativos em 1 ano" value={fmtNum(active?.year)} />
-        <Kpi label="Navegadores já vistos" value={fmtNum(active?.total)} hint="total histórico" />
+        <Kpi
+          label="Navegadores já vistos"
+          value={fmtNum(active?.total)}
+          hint="total histórico"
+        />
       </div>
 
       {/* Filtros */}
@@ -298,23 +398,49 @@ export default function AdminPage() {
         <>
           {!hasData && (
             <div className={styles.notice}>
-              Ainda não há dados de tráfego neste período. O rastreio começa a valer assim que as regras do Firestore
-              forem publicadas e as pessoas navegarem no site.
+              Ainda não há dados de tráfego neste período. O rastreio começa a
+              valer assim que as regras do Firestore forem publicadas e as
+              pessoas navegarem no site.
             </div>
           )}
 
+          <div className={styles.groupLabel}>
+            <TrendingUp size={13} /> No período selecionado
+          </div>
           <div className={styles.kpiGrid}>
             <Kpi
               label="Visitantes únicos"
               value={fmtNum(total.uniqueVisitors)}
-              change={delta(total.uniqueVisitors || 0, prevTotal?.uniqueVisitors)}
+              change={delta(
+                total.uniqueVisitors || 0,
+                prevTotal?.uniqueVisitors,
+              )}
               hint="soma dos únicos de cada dia"
             />
-            <Kpi label="Pageviews" value={fmtNum(total.pageViews)} change={delta(total.pageViews || 0, prevTotal?.pageViews)} />
-            <Kpi label="Sessões" value={fmtNum(total.sessions)} change={delta(total.sessions || 0, prevTotal?.sessions)} />
-            <Kpi label="Páginas por sessão" value={(total.pagesPerSession || 0).toFixed(1)} />
-            <Kpi label="Tempo ativo médio" value={fmtDuration(total.avgSessionSeconds)} hint="por sessão" />
-            <Kpi label="Novos cadastros" value={fmtNum(total.signups)} change={null} />
+            <Kpi
+              label="Pageviews"
+              value={fmtNum(total.pageViews)}
+              change={delta(total.pageViews || 0, prevTotal?.pageViews)}
+            />
+            <Kpi
+              label="Sessões"
+              value={fmtNum(total.sessions)}
+              change={delta(total.sessions || 0, prevTotal?.sessions)}
+            />
+            <Kpi
+              label="Páginas por sessão"
+              value={(total.pagesPerSession || 0).toFixed(1)}
+            />
+            <Kpi
+              label="Tempo ativo médio"
+              value={fmtDuration(total.avgSessionSeconds)}
+              hint="por sessão"
+            />
+            <Kpi
+              label="Novos cadastros"
+              value={fmtNum(total.signups)}
+              change={null}
+            />
             <Kpi
               label="Requisições de API"
               value={fmtNum(total.apiCount)}
@@ -323,11 +449,22 @@ export default function AdminPage() {
             <Kpi
               label="Erros de API"
               value={fmtNum(total.apiErrors)}
-              hint={total.apiCount ? `${((total.apiErrors / total.apiCount) * 100).toFixed(1)}% das requisições` : ''}
+              hint={
+                total.apiCount
+                  ? `${((total.apiErrors / total.apiCount) * 100).toFixed(1)}% das requisições`
+                  : ''
+              }
             />
-            <Kpi label="Latência média das APIs" value={`${Math.round(total.apiAvgMs || 0)} ms`} />
+            <Kpi
+              label="Latência média das APIs"
+              value={`${Math.round(total.apiAvgMs || 0)} ms`}
+            />
             <Kpi label="Erros de JavaScript" value={fmtNum(total.jsErrors)} />
           </div>
+
+          <h2 className={styles.sectionHeading}>
+            <Radio size={19} /> Tráfego e uso
+          </h2>
 
           <Card title="Evolução" wide>
             <div className={styles.chips} style={{ marginBottom: 14 }}>
@@ -380,10 +517,15 @@ export default function AdminPage() {
             </div>
           </Card>
 
+          <h2 className={styles.sectionHeading}>
+            <Users2 size={19} /> Quem visita
+          </h2>
           <div className={styles.grid}>
             <Card title="Requisições por API" wide>
               {routes.length === 0 ? (
-                <p className={styles.muted}>Nenhuma chamada de API registrada no período.</p>
+                <p className={styles.muted}>
+                  Nenhuma chamada de API registrada no período.
+                </p>
               ) : (
                 <div className={styles.tableWrap}>
                   <table className={styles.table}>
@@ -402,7 +544,11 @@ export default function AdminPage() {
                           <td className={styles.mono}>{r.route}</td>
                           <td>{fmtNum(r.count)}</td>
                           <td>{fmtNum(r.errors)}</td>
-                          <td className={r.errors / r.count > 0.05 ? styles.down : ''}>
+                          <td
+                            className={
+                              r.errors / r.count > 0.05 ? styles.down : ''
+                            }
+                          >
                             {((r.errors / r.count) * 100).toFixed(1)}%
                           </td>
                           <td>{Math.round(r.avgMs)} ms</td>
@@ -413,7 +559,8 @@ export default function AdminPage() {
                 </div>
               )}
               <p className={styles.footnote}>
-                Conta as chamadas às rotas <code>/api/*</code> feitas pelo site no navegador do usuário.
+                Conta as chamadas às rotas <code>/api/*</code> feitas pelo site
+                no navegador do usuário.
               </p>
             </Card>
 
@@ -461,31 +608,56 @@ export default function AdminPage() {
             </Card>
 
             <Card title="Erros de JavaScript mais comuns" wide>
-              <RankList items={rank(total.errorMsgs)} empty="Nenhum erro registrado. 🎉" />
+              <RankList
+                items={rank(total.errorMsgs)}
+                empty="Nenhum erro registrado. 🎉"
+              />
             </Card>
           </div>
 
-          <h2 className={styles.sectionHeading}>Conteúdo e comunidade</h2>
+          <h2 className={styles.sectionHeading}>
+            <Disc3 size={19} /> Conteúdo e comunidade
+          </h2>
           <div className={styles.kpiGrid}>
             <Kpi label="Usuários cadastrados" value={fmtNum(content?.users)} />
-            <Kpi label="Avaliações de álbuns" value={content?.ratings == null ? 'n/d' : fmtNum(content.ratings)} />
-            <Kpi label="Álbuns avaliados" value={fmtNum(content?.albumsRated)} hint="distintos" />
-            <Kpi label="Faixas avaliadas" value={fmtNum(content?.tracksRated)} hint="distintas" />
+            <Kpi
+              label="Avaliações de álbuns"
+              value={content?.ratings == null ? 'n/d' : fmtNum(content.ratings)}
+            />
+            <Kpi
+              label="Álbuns avaliados"
+              value={fmtNum(content?.albumsRated)}
+              hint="distintos"
+            />
+            <Kpi
+              label="Faixas avaliadas"
+              value={fmtNum(content?.tracksRated)}
+              hint="distintas"
+            />
             <Kpi label="Listas" value={fmtNum(content?.lists)} />
             <Kpi label="Tier lists" value={fmtNum(content?.tierLists)} />
-            <Kpi label="Perguntas na comunidade" value={fmtNum(content?.questions)} />
+            <Kpi
+              label="Perguntas na comunidade"
+              value={fmtNum(content?.questions)}
+            />
             <Kpi label="Comentários" value={fmtNum(content?.comments)} />
           </div>
 
           <div className={styles.grid}>
             <Card title="Álbuns mais avaliados">
               <RankList
-                items={(tops?.albums || []).map((a) => ({ label: `${a.albumTitle} — ${a.albumArtist}`, value: a.count || 0 }))}
+                items={(tops?.albums || []).map((a) => ({
+                  label: `${a.albumTitle} — ${a.albumArtist}`,
+                  value: a.count || 0,
+                }))}
               />
             </Card>
             <Card title="Usuários mais ativos (avaliações)">
               <RankList
-                items={(tops?.users || []).map((u) => ({ label: u.displayName || u.email || u.id, value: u.ratingsCount || 0 }))}
+                items={(tops?.users || []).map((u) => ({
+                  label: u.displayName || u.email || u.id,
+                  value: u.ratingsCount || 0,
+                }))}
               />
             </Card>
 
@@ -504,7 +676,10 @@ export default function AdminPage() {
                     {(tops?.recentUsers || []).map((u) => (
                       <tr key={u.id}>
                         <td>
-                          <Link href={`/profile/${u.id}`} className={styles.link}>
+                          <Link
+                            href={`/profile/${u.id}`}
+                            className={styles.link}
+                          >
                             {u.displayName || 'Sem nome'}
                           </Link>
                         </td>
@@ -517,8 +692,9 @@ export default function AdminPage() {
                 </table>
               </div>
               <p className={styles.footnote}>
-                Usuários que entram com Google podem ter a data de cadastro sobrescrita a cada login (o AuthContext
-                regrava <code>createdAt</code>).
+                Usuários que entram com Google podem ter a data de cadastro
+                sobrescrita a cada login (o AuthContext regrava{' '}
+                <code>createdAt</code>).
               </p>
             </Card>
 
@@ -539,7 +715,9 @@ export default function AdminPage() {
                     {(tops?.visitors || []).map((v) => (
                       <tr key={v.id}>
                         <td>{formatTs(v.lastSeen)}</td>
-                        <td>{v.name || (v.uid ? 'Usuário logado' : 'Anônimo')}</td>
+                        <td>
+                          {v.name || (v.uid ? 'Usuário logado' : 'Anônimo')}
+                        </td>
                         <td>{v.device}</td>
                         <td>
                           {v.browser} / {v.os}

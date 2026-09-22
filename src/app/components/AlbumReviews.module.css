@@ -1,0 +1,132 @@
+.wrap {
+  margin-top: 40px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line, #2a2620);
+}
+
+.count {
+  margin-left: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-muted, #948c7b);
+}
+
+.loading {
+  margin-top: 40px;
+  font-size: 0.85rem;
+  color: var(--ink-muted, #948c7b);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Degradê por cima do último item quando ainda tem mais pra carregar. */
+.listFaded::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 110px;
+  background: linear-gradient(to bottom, transparent, var(--bg-void, #0b0a0d));
+  pointer-events: none;
+}
+
+.item {
+  display: flex;
+  gap: 14px;
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--line, #2a2620);
+}
+
+.avatarLink {
+  flex-shrink: 0;
+  display: block;
+  width: 40px;
+  height: 40px;
+}
+
+.avatar,
+.avatarFallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatarFallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface-raised, #1f1c21);
+  color: var(--ink-muted, #948c7b);
+  font-weight: 700;
+}
+
+.body {
+  min-width: 0;
+  flex: 1;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--ink, #ede6d6);
+  text-decoration: none;
+}
+
+.name:hover {
+  color: var(--accent-soft, #e06a4d);
+}
+
+.score {
+  font-size: 0.78rem;
+  color: var(--ink-muted, #948c7b);
+}
+
+.review {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink-muted, #948c7b);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.moreBtn {
+  display: block;
+  margin: 8px auto 0;
+  padding: 8px 22px;
+  border-radius: 999px;
+  border: 1px solid var(--line, #2a2620);
+  background: var(--bg-surface, #17151a);
+  color: var(--ink, #ede6d6);
+  font-size: 0.85rem;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+}
+
+.moreBtn:hover {
+  border-color: var(--accent, #c9432b);
+}

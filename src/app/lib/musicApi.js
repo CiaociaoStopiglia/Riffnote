@@ -70,21 +70,38 @@ export async function fetchNewReleases({ country = 'us', limit = 20 } = {}) {
  * filtrar por gênero/década.
  */
 export async function searchAlbums(term, { limit = 12 } = {}) {
-    const { data } = await axios.get('/api/search-albums', {
-        params: { term, limit },
-    });
+    const [itunesRes, deezerRes] = await Promise.allSettled([
+        axios.get('/api/search-albums', { params: { term, limit } }),
+        searchDeezerAlbums({ term, limit }),
+    ]);
 
-    return (data?.results ?? []).map((item) => ({
-        id: item.collectionId,
-        title: item.collectionName,
-        artist: item.artistName,
-        artistId: item.artistId || null,
-        artwork: upscaleArtwork(item.artworkUrl100),
-        rating: fakeRatingFromId(item.collectionId),
-        url: item.collectionViewUrl,
-        genre: item.primaryGenreName || null,
-        releaseDate: item.releaseDate || null,
-    }));
+    const itunes =
+        itunesRes.status === 'fulfilled'
+            ? (itunesRes.value.data?.results ?? []).map((item) => ({
+                  id: item.collectionId,
+                  title: item.collectionName,
+                  artist: item.artistName,
+                  artistId: item.artistId || null,
+                  artwork: upscaleArtwork(item.artworkUrl100),
+                  rating: fakeRatingFromId(item.collectionId),
+                  url: item.collectionViewUrl,
+                  genre: item.primaryGenreName || null,
+                  releaseDate: item.releaseDate || null,
+              }))
+            : [];
+    const deezer = deezerRes.status === 'fulfilled' ? deezerRes.value : [];
+
+    // Se as duas falharem, propaga o erro como antes.
+    if (itunesRes.status === 'rejected' && deezerRes.status === 'rejected') {
+        throw itunesRes.reason;
+    }
+
+    // iTunes primeiro; Deezer só entra com o que o iTunes não trouxe.
+    const key = (a) => `${a.artist}|${a.title}`.toLowerCase().replace(/[^a-z0-9|]+/g, '');
+    const seen = new Set(itunes.map(key));
+    const extra = deezer.filter((a) => !seen.has(key(a)));
+
+    return [...itunes, ...extra];
 }
 
 /**
@@ -157,7 +174,63 @@ export async function fetchArtistAlbums(artistId, { limit = 50 } = {}) {
     };
 }
 
+export const DEEZER_ID_PREFIX = 'dz-';
+
+export function isDeezerId(id) {
+    return String(id).startsWith(DEEZER_ID_PREFIX);
+}
+
+function mapDeezerAlbum(item) {
+    return {
+        id: `${DEEZER_ID_PREFIX}${item.id}`,
+        title: item.title,
+        artist: item.artist?.name || '',
+        artistId: null,
+        artwork: item.cover_xl || item.cover_big || item.cover_medium || null,
+        rating: fakeRatingFromId(item.id),
+        url: item.link,
+        genre: item.genres?.data?.[0]?.name || null,
+        releaseDate: item.release_date || null,
+    };
+}
+
+/** Busca álbuns na Deezer — por artista + álbum (precisa) ou termo livre. */
+export async function searchDeezerAlbums({ artist, album, term, limit = 10 } = {}) {
+    try {
+        const { data } = await axios.get('/api/deezer-search', {
+            params: { artist, album, term, limit },
+        });
+        return (data?.data ?? []).map(mapDeezerAlbum);
+    } catch (err) {
+        return [];
+    }
+}
+
+async function fetchDeezerAlbumFull(dzId) {
+    const { data } = await axios.get('/api/deezer-album', { params: { id: dzId } });
+
+    const album = {
+        ...mapDeezerAlbum(data),
+        artistId: null,
+        trackCount: data.nb_tracks || null,
+    };
+
+    const tracks = (data.tracks?.data ?? []).map((track, index) => ({
+        id: track.id,
+        number: track.track_position || index + 1,
+        title: track.title,
+        durationMs: (track.duration || 0) * 1000,
+        previewUrl: track.preview || null,
+    }));
+
+    return { album, tracks };
+}
+
 export async function fetchAlbumFull(collectionId) {
+    if (isDeezerId(collectionId)) {
+        return fetchDeezerAlbumFull(String(collectionId).slice(DEEZER_ID_PREFIX.length));
+    }
+
     const { data } = await axios.get('/api/album-tracks', {
         params: { collectionId },
     });
